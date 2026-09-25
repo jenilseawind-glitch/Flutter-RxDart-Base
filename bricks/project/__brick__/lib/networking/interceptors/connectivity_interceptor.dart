@@ -14,7 +14,7 @@ class ConnectivityInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     final result = await Connectivity().checkConnectivity();
-    if (result.contains(ConnectivityResult.none)) {
+    if (!result.hasConnectivity) {
       return handler.reject(
         DioException(
           requestOptions: options,

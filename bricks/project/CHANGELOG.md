@@ -1,5 +1,30 @@
 # Changelog
 
+## 1.3.0
+
+- **Dependency Upgrades**:
+  - `connectivity_plus`: Upgraded from `^6.1.0` to `^7.3.1`. Adopted idiomatic `!result.hasConnectivity` in `ConnectivityInterceptor`.
+  - `flutter_dotenv`: Upgraded from `^5.2.1` to `^6.0.1` with enhanced error diagnostics and multi-environment file overrides.
+  - `flutter_secure_storage`: Upgraded from `^9.2.2` to `^10.3.4` (bridge version with automatic KeyStore cipher migration engine, Apple Privacy Manifest, and WASM compatibility).
+- **Environment Baseline**:
+  - Raised template Dart SDK constraint to `sdk: ">=3.3.0 <4.0.0"` to match Flutter 3.19+ and modern plugin ecosystem requirements.
+
+### ⚠️ Pre-Upgrade Checklist (Before Upgrading Existing Projects)
+
+When updating an existing app scaffolded with earlier versions of this brick:
+
+1. **Android Build Configuration**:
+   - Ensure Android Gradle Plugin (AGP) is `>= 8.12.1` and Gradle distribution wrapper is `>= 8.13`.
+   - Ensure `compileOptions` specifies Java 17 compatibility.
+   - Verify `minSdkVersion` is at least `21` (or `23` if using `flutter_secure_storage`).
+2. **iOS / macOS Build Configuration**:
+   - Ensure Xcode is `>= 16.1` and deployment target is at least **iOS 13.0** (`platform :ios, '13.0'` in `Podfile`) and **macOS 10.15**.
+3. **Secure Storage Data Migration**:
+   - Upgrading `flutter_secure_storage` to `10.3.4` will automatically re-encrypt legacy 9.x tokens using `RSA-OAEP` + `AES-GCM`.
+   - **Do NOT bump directly to 11.x on published apps**, as 11.x deletes legacy ciphers without migration. Run on `10.3.x` first.
+4. **Environment Variables**:
+   - If using `flutter_dotenv` in tests, replace deprecated `dotenv.testLoad(...)` with `dotenv.loadFromString(...)`.
+
 ## 1.2.1
 
 - Ensured `.env` template asset is explicitly tracked in repository for clean smoke test asset resolution.

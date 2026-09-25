@@ -52,4 +52,19 @@ no dependency injection happens at generation time.
   scaffold the AI Agent Harness. Non-fatal if it fails — prints a note that it can be installed
   anytime via `mason make harness`.
 
+---
+
+## ⚠️ Pre-Upgrade Checklist for Existing Apps
+
+When updating an existing app scaffolded with an earlier version of this brick:
+
+1. **Check Native Toolchains**:
+   - **Android**: Ensure AGP `>= 8.12.1`, Gradle `>= 8.13`, Java 17, and `minSdkVersion >= 21` (or `23` with secure storage).
+   - **iOS / macOS**: Ensure Xcode `>= 16.1` and minimum deployment targets **iOS 13.0** and **macOS 10.15**.
+2. **Secure Storage Migration Safety**:
+   - `flutter_secure_storage` is set to `^10.3.4` (bridge release). When launched, it automatically re-encrypts 9.x legacy ciphers to `RSA-OAEP` + `AES-GCM`.
+   - **Do NOT bump directly to 11.x on published apps**, as 11.x deletes legacy ciphers without migration. Run on `10.3.x` first.
+3. **Environment Variables**:
+   - In test files, replace legacy `dotenv.testLoad(...)` with `dotenv.loadFromString(...)`.
+
 See [`CHANGELOG.md`](CHANGELOG.md) for version history.
