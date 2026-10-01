@@ -170,7 +170,6 @@ Future<void> main() async {
     }
 
     print('--- Smoke test completed successfully! ---');
-    exit(0);
   } finally {
     // Ensure template pubspec is always restored to original content
     templatePubspec.writeAsStringSync(backupPubspecContent);
