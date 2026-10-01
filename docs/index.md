@@ -117,16 +117,24 @@ lib/
 │   ├── router/                           # AppRouter, Routes registry, navigatorKey
 │   ├── widgets/                          # Design system & interactive components
 │   │   ├── app_scaffold.dart             # Standard scaffold with AppBar & background
-│   │   └── ui/                           # Reusable UI component library
-│   │       ├── ui_components.dart        # Barrel export for clean imports
-│   │       ├── app_response_builder.dart # Declarative ApiResponse stream builder
-│   │       ├── common_button.dart        # Production button with built-in loading spinner
-│   │       ├── app_textformfield.dart    # Styled input with password visibility eye toggle
-│   │       ├── app_dialog.dart           # Confirmation, status, & async confirm dialogs
-│   │       ├── app_card.dart             # Styled card container
-│   │       ├── app_empty_state.dart      # Empty state placeholder
-│   │       ├── app_error_state.dart      # Error state with retry button
-│   │       └── app_loading_state.dart    # Centered loading spinner
+│   │   ├── ui/                           # Stateless UI primitives & barrel export
+│   │   │   ├── ui_components.dart        # Barrel export for clean imports
+│   │   │   ├── app_card.dart             # Styled card container
+│   │   │   ├── app_empty_state.dart      # Empty state placeholder
+│   │   │   ├── app_error_state.dart      # Error state with retry button
+│   │   │   ├── app_loading_state.dart    # Centered loading spinner
+│   │   │   ├── app_response_builder.dart # Declarative ApiResponse stream builder
+│   │   │   ├── app_scaffold.dart         # Scaffold with AppBar, drawer & background
+│   │   │   └── common_button.dart        # Production button with built-in loading spinner
+│   │   └── view/                         # Stateful widgets backed by RxDart BLoCs (Rule 3)
+│   │       ├── app_dialog/
+│   │       │   ├── app_dialog.dart       # Confirmation, status, & async confirm dialogs
+│   │       │   └── bloc/
+│   │       │       └── app_dialog_bloc.dart # Local BLoC managing async loading state
+│   │       └── app_textformfield/
+│   │           ├── app_textformfield.dart # Styled input with password visibility eye toggle
+│   │           └── bloc/
+│   │               └── app_textformfield_bloc.dart # Local BLoC managing obscure/visible state
 │   ├── common_utils.dart                 # hideKeyboard, launcher recipes, showCommonDialog
 │   └── show_message.dart                 # ShowMessage.success / error / info / warning toasts
 └── main.dart                             # Entry point: Store hydration, AppRouter, ScreenUtil, OverlaySupport
@@ -141,13 +149,13 @@ lib/
 
 ### 2. Form & Action Toolkit (`CommonButton` & `AppTextFormField`)
 - **`CommonButton`**: Handles loading state out of the box (disables taps and shows spinner), prefix/suffix icons, and custom styling.
-- **`AppTextFormField`**: Form input with labels, hints, prefixes/suffixes, built-in password visibility toggle (`obscureText`), and ScreenUtil responsive scaling.
+- **`AppTextFormField`**: Form input with labels, hints, prefixes/suffixes, and ScreenUtil responsive scaling. Uses a dedicated [`AppTextFormFieldBloc`](../bricks/project/__brick__/lib/utils/widgets/view/app_textformfield/bloc/app_textformfield_bloc.dart) with `BehaviorSubject<bool>` for password visibility toggling, keeping the widget 100% `setState`-free (Rule 3).
 
 ### 3. Lifecycle-Safe Cancellation (`CancelTokenOwner`)
 - BLoCs mix in `CancelTokenOwner` to manage Dio `CancelToken`s. Pending network calls automatically abort on screen `dispose()` or pull-to-refresh without memory leaks.
 
 ### 4. Interactive Dialog Shells (`AppDialog`)
-- Static helpers `AppDialog.showConfirmation`, `AppDialog.showStatus`, and `AppDialog.showAsyncConfirm` (keeps dialog open with spinner during async mutation).
+- Static helpers `AppDialog.showConfirmation`, `AppDialog.showStatus`, and `AppDialog.showAsyncConfirm`. The async confirm dialog is backed by a local [`AppDialogBloc`](../bricks/project/__brick__/lib/utils/widgets/view/app_dialog/bloc/app_dialog_bloc.dart) with `BehaviorSubject<bool>` to manage mutation loading states without `setState`.
 
 ### 5. Multipart & Form-Data Ready (`ApiBaseHelper`)
 - Built-in `postFormData` and `putFormData` with `FormData.fromMap` and `onSendProgress` progress callbacks.

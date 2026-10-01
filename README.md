@@ -245,7 +245,9 @@ lib/
 ├── resources/                            # Design tokens (ResColors, Material 3 AppTypography)
 ├── services/                             # Notification & DeviceInfo stubs
 ├── utils/                                # Extensions, AppRouter, ShowMessage toasts
-│   └── widgets/ui/                       # UI toolkit (AppResponseBuilder, CommonButton, AppDialog, AppCard)
+│   └── widgets/                          # Design system & interactive components
+│       ├── ui/                           # Stateless UI toolkit (AppResponseBuilder, CommonButton, AppCard)
+│       └── view/                         # RxDart BLoC-driven widgets (AppTextFormField, AppDialog)
 └── main.dart                             # Pre-frame store hydration, ScreenUtil, AppRouter
 ```
 

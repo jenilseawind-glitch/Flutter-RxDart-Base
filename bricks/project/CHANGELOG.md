@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.2
+
+- Fixed `redux_rxdart_lints` dependency in scaffolded `pubspec.yaml` to reference the remote Git repository instead of a relative local path.
+- Updated E2E smoke tester to dynamically resolve remote git linter dependencies.
+
 ## 1.3.1
 
 - Restored `meta` constraint to `^1.16.0` and `intl` constraint to `^0.20.2` to ensure full compatibility with Flutter SDK (`flutter_test` pins `meta: 1.18.0` and `flutter_localizations` pins `intl: 0.20.2`).

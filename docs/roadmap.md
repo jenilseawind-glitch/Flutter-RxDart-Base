@@ -90,6 +90,10 @@ The following major milestones track architectural enhancements, enterprise capa
   - Enhance `ErrorMappingInterceptor` to extract backend error messages from `err.response?.data` (e.g. `data['message']` or `data['errors']`) for 400, 401, 404, 409, and 500 status codes rather than falling back to generic Dio messages.
 - [ ] **De-duplicate AppScaffold**:
   - Remove redundant `lib/utils/widgets/app_scaffold.dart`, consolidating to `lib/utils/widgets/ui/app_scaffold.dart`.
+- [ ] **Windows Path Length & Mason Cache Hardening**:
+  - Windows default Git cache paths (`%LOCALAPPDATA%\Mason\Cache\git\<repo>_<base64>_<hash>\`) consume ~191 characters, leaving only 67 characters before hitting the Win32 `MAX_PATH` (260-char) limit.
+  - Document required Windows developer setup: configure `MASON_CACHE` to a short root (e.g. `C:\.mason`).
+  - Evaluate future path compaction for deep brick templates (such as flattening `widgets/view/.../bloc` or colocating widget helper BLoCs) without compromising Rule 3 (zero `setState`).
 - [ ] **Comprehensive Unit Test Templates**:
   - Expand `{{feature_name}}_bloc_test.dart` to assert stream emission sequences (`loading` -> `completed`, and error state handling with mocks).
 

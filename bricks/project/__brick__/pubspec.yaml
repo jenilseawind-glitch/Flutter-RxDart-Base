@@ -76,7 +76,9 @@ dev_dependencies:
   {{#include_harness}}
   custom_lint: ^0.8.0
   redux_rxdart_lints:
-    path: ../packages/redux_rxdart_lints
+    git:
+      url: https://github.com/jenilseawind-glitch/Flutter-RxDart-Base.git
+      path: packages/redux_rxdart_lints
   {{/include_harness}}
 
 # For information on the generic Dart part of this file, see the

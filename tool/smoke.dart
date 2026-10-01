@@ -39,7 +39,7 @@ Future<void> main() async {
   try {
     var modifiedPubspec = backupPubspecContent.replaceAll(
       RegExp(
-          r'git:\s+url:\s+https://github.com/TheJenilDGohel/Flutter-RxDart-Base\.git\s+path:\s+packages/redux_rxdart_lints'),
+          r'git:\s+url:\s+https://github\.com/(?:TheJenilDGohel|jenilseawind-glitch)/Flutter-RxDart-Base\.git\s+path:\s+packages/redux_rxdart_lints'),
       'path: ../packages/redux_rxdart_lints',
     );
     templatePubspec.writeAsStringSync(modifiedPubspec);
@@ -88,8 +88,9 @@ Future<void> main() async {
     final pubspecFile = File(p.join(tempDir.path, 'pubspec.yaml'));
     var pubspecContent = pubspecFile.readAsStringSync();
     pubspecContent = pubspecContent.replaceFirst(
-      '    git:\n      url: https://github.com/TheJenilDGohel/Flutter-RxDart-Base.git\n      path: packages/redux_rxdart_lints',
-      '    path: ../packages/redux_rxdart_lints',
+      RegExp(
+          r'git:\s+url:\s+https://github\.com/(?:TheJenilDGohel|jenilseawind-glitch)/Flutter-RxDart-Base\.git\s+path:\s+packages/redux_rxdart_lints'),
+      'path: ../packages/redux_rxdart_lints',
     );
     pubspecFile.writeAsStringSync(pubspecContent);
 
