@@ -164,6 +164,24 @@ Never log card numbers.
         workingDirectory: app.path, runInShell: true);
     check('second run is a no-op',
         run.exitCode == 0 && (run.stdout as String).contains('Already on'));
+    check('no-op run points at a stale mason cache',
+        (run.stdout as String).contains('mason upgrade -g'));
+
+    // --check-only must never claim "up to date" when it couldn't look.
+    final manifestPath = p.join(app.path, '.harness', 'version.json');
+    final realManifest = File(manifestPath).readAsStringSync();
+    final offline = (jsonDecode(realManifest) as Map)
+      ..['upstream_repo'] = 'https://github.com/nobody-xyz-404/missing.git';
+    File(manifestPath).writeAsStringSync(jsonEncode(offline));
+    run = await Process.run(
+        'dart', ['run', 'scripts/agent/upgrade.dart', '--check-only'],
+        workingDirectory: app.path, runInShell: true);
+    final checkOut = run.stdout as String;
+    check(
+        '--check-only reports an unreachable upstream honestly',
+        checkOut.contains('Could not determine') &&
+            !checkOut.contains('up to date'));
+    File(manifestPath).writeAsStringSync(realManifest);
 
     run = await Process.run(
         'dart', ['run', 'scripts/agent/upgrade.dart', '--force'],

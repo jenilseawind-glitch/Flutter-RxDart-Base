@@ -6,7 +6,7 @@ Paths below are relative to `bricks/project/__brick__/` unless stated otherwise.
 
 ## 1. Summary
 
-The core design is sound: sealed `ApiException` / `ApiResponse`, per-screen BLoC with `CancelTokenOwner`, disciplined brick versioning, and an honest `base-gaps.md`. All historical gaps around false claims, missing CI, or unverified brick outputs have been resolved with automated end-to-end smoke testing (`tool/smoke.dart`), link validation (`tool/docs_check.dart`), GitHub Actions CI matrix (`ci.yml`, `version-gate.yml`), and the AI Agent Harness (v1.6.0: Claude Code-native wiring, Dart MCP server, edit hook, tested upgrades).
+The core design is sound: sealed `ApiException` / `ApiResponse`, per-screen BLoC with `CancelTokenOwner`, disciplined brick versioning, and an honest `base-gaps.md`. All historical gaps around false claims, missing CI, or unverified brick outputs have been resolved with automated end-to-end smoke testing (`tool/smoke.dart`), link validation (`tool/docs_check.dart`), GitHub Actions CI matrix (`ci.yml`, `version-gate.yml`), and the AI Agent Harness (v1.6.1: Claude Code-native wiring, Dart MCP server, edit hook, tested upgrades).
 
 ## 2. Findings Resolution
 
