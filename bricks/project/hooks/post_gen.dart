@@ -42,6 +42,17 @@ Future<void> run(HookContext context) async {
     exit(1);
   }
 
+  // Templates are rendered through mustache, so normalise formatting to the
+  // installed SDK's formatter; the harness quality gate checks it.
+  final formatResult = await Process.run('dart', [
+    'format',
+    'lib',
+    'test',
+  ], runInShell: true);
+  if (formatResult.exitCode != 0) {
+    context.logger.warn('dart format failed: ${formatResult.stderr}');
+  }
+
   final removeResult = await Process.run('flutter', [
     'pub',
     'remove',

@@ -14,6 +14,7 @@
 - **Startup**: `AppStore.init()` no longer crashes on unreadable secure storage or corrupt JSON — it wipes the session and starts signed out. `AppStore.authToken`/`dispatch` are safe before `init()`. Redux logging middleware runs in debug builds only.
 - `LogoutAction` keeps the user's locale.
 - **Hooks**: new `pre_gen` validates `project_name`, `android_package_name`, `ios_bundle_id` and the target directory *before* any file is written. `ios_bundle_id` is now actually applied (underscores normalised to `-`; `RunnerTests` keeps its suffix). The brick no longer ships a `.gitignore` that replaced Flutter's defaults — harness lines are merged into the existing file. A failed step leaves files in place and prints the command to re-run. The auto-installed harness uses `--on-conflict skip`, so existing `CLAUDE.md`/`AGENTS.md` are never overwritten.
+- `post_gen` runs `dart format lib test`: a fresh project previously failed its own `verify` format gate (26 files) under the Dart 3.13 formatter.
 - `.env` is tracked (it is a bundled asset, so ignoring it broke fresh clones) and documents that its contents ship inside the app.
 - Removed the duplicate, unused `lib/utils/widgets/app_scaffold.dart`.
 - Dependencies: `flutter_secure_storage ^11.2.0`, `meta ^1.19.0`, `change_app_package_name ^1.5.0`.

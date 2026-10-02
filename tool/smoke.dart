@@ -119,13 +119,23 @@ Future<void> main() async {
       workingDirectory: tempDir.path,
     );
 
-    await _run('Running dart format', 'dart', ['format', '.'],
+    await _run('Checking generated code is formatted', 'dart',
+        ['format', '--set-exit-if-changed', '.'],
         workingDirectory: tempDir.path);
     await _run(
         'Running flutter analyze', 'flutter', ['analyze', '--fatal-infos'],
         workingDirectory: tempDir.path);
-    await _run('Running flutter test', 'flutter', ['test'],
+    final testRes = await _run(
+        'Running flutter test',
+        'flutter',
+        [
+          'test',
+          '--reporter',
+          'expanded',
+        ],
         workingDirectory: tempDir.path);
+    final testLines = (testRes.stdout as String).trim().split('\n');
+    print('  ${testLines.last.trim()}');
 
     print('Running custom_lint...');
     final lintRes = await Process.run('dart', ['run', 'custom_lint'],

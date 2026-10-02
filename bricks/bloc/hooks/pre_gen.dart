@@ -2,7 +2,26 @@ import 'dart:io';
 
 import 'package:mason/mason.dart';
 
+final _validFeature = RegExp(r'^[a-z][a-z0-9_]*$');
+
 Future<void> run(HookContext context) async {
+  final rawFeature = (context.vars['feature_name'] as String? ?? '').trim();
+  final feature = rawFeature.snakeCase;
+  if (!_validFeature.hasMatch(feature)) {
+    context.logger.err(
+      'feature_name "$rawFeature" is not a valid Dart file/identifier name. '
+      'Use snake_case, e.g. user_profile.',
+    );
+    exit(1);
+  }
+  if (Directory('lib/features/$feature').existsSync()) {
+    context.logger.warn(
+      'lib/features/$feature already exists; conflicting files follow '
+      'mason\'s --on-conflict policy.',
+    );
+  }
+  context.vars = {...context.vars, 'feature_name': feature};
+
   final currentProjectName =
       (context.vars['project_name'] as String?)?.trim() ?? '';
 
