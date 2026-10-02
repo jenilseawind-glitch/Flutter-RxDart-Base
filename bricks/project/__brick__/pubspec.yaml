@@ -45,10 +45,10 @@ dependencies:
   flutter_redux: ^0.10.0
   shared_preferences: ^2.5.5
   {{#include_secure_storage}}
-  flutter_secure_storage: ^10.3.4
+  flutter_secure_storage: ^11.2.0
   {{/include_secure_storage}}
   rxdart: ^0.28.0
-  meta: ^1.16.0
+  meta: ^1.19.0
 
   # UI / responsive
   flutter_screenutil: ^5.9.3
@@ -73,7 +73,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  change_app_package_name: ^1.4.0
+  change_app_package_name: ^1.5.0
   {{#include_harness}}
   custom_lint: ^0.8.1
   redux_rxdart_lints:
