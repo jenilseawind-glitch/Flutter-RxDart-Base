@@ -32,6 +32,7 @@ Future<void> main(List<String> args) async {
   final manifestFile = File('.harness/version.json');
   final manifest = _readJson(manifestFile);
   final current = manifest['version']?.toString() ?? '0.0.0';
+  // fork-url: the fork until upstream (TheJenilDGohel) merges harness 1.6.
   final upstream =
       manifest['upstream_repo']?.toString() ??
       'https://github.com/jenilseawind-glitch/Flutter-RxDart-Base.git';

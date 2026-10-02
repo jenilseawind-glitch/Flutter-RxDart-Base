@@ -18,6 +18,7 @@
 - `.env` is tracked (it is a bundled asset, so ignoring it broke fresh clones) and documents that its contents ship inside the app.
 - Removed the duplicate, unused `lib/utils/widgets/app_scaffold.dart`.
 - Dependencies: `flutter_secure_storage ^11.2.0`, `meta ^1.19.0`, `change_app_package_name ^1.5.0`.
+- **Repository URLs** still point at the fork (`jenilseawind-glitch`) on purpose: upstream `TheJenilDGohel` ships an older `redux_rxdart_lints` that breaks new apps. Switch to upstream right after the upstream merge (checklist in `docs/contributing.md` §6).
 
 - `redux_rxdart_lints` migrated to `analyzer ^8` / `custom_lint_builder ^0.8.1` (`DiagnosticSeverity`, `DiagnosticReporter`). `custom_lint 0.8.0` (analyzer 7) crashes on Flutter 3.47.x / Dart 3.13 with `Missing implementation of visitDotShorthandPropertyAccess`. Scaffolded `pubspec.yaml` now requires `custom_lint: ^0.8.1`. Not verified on Flutter 3.44 / Dart 3.12.
 

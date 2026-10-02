@@ -56,6 +56,7 @@ Run these commands before committing any changes:
 1. **Brick Versioning & CHANGELOG**: Every template or hook change to a brick requires bumping `version` in its `brick.yaml` and documenting changes in that brick's `CHANGELOG.md`.
 2. **Documentation Currency**: Keep `README.md`, `docs/`, and brick documentation synchronized with template changes.
 3. **Golden Rules Consistency**: Enforceable Golden Rules in `bricks/harness/__brick__/AGENTS.md` must be mirrored in `packages/redux_rxdart_lints`, with an `expect_lint` case in its `example/` fixture.
-4. **Git Commit Policy**: Conventional Commits format (`feat(...)`, `fix(...)`, `docs(...)`). Never commit without explicit instruction.
+4. **Canonical Repo vs Fork URLs**: Upstream is `TheJenilDGohel/Flutter-RxDart-Base`. Some functional URLs deliberately point at the fork `jenilseawind-glitch` until upstream merges the 1.6 work — do not "fix" them early, and switch them right after the upstream merge. See [`docs/contributing.md` §6](docs/contributing.md#6-urls-point-at-one-canonical-org).
+5. **Git Commit Policy**: Conventional Commits format (`feat(...)`, `fix(...)`, `docs(...)`). Never commit without explicit instruction.
 
 See [`docs/contributing.md`](docs/contributing.md) for complete maintainer details.

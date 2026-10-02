@@ -12,6 +12,7 @@ Agent discovery, tooling and feedback loops (see `docs/ai-harness-rnd.md` in the
 - **`upgrade.dart` rewritten.** Fixed: stamping success when `mason make` failed; overwriting the Android/iOS ids with `com.example.<name>`; duplicating the `@.harness/active-context.md` line on every run; deprecated `::set-output`; no backup of Tier-1 files; versions taken from a git tag instead of the rendered brick. Contracts now merge on an explicit `harness:project-rules` marker; legacy files are migrated. `version.json` records the install vars and an upgrade history.
 - **Content corrected against the 1.4.0 project brick**: rule 2 (`userFacingMessage(context)`), rule 8 (cancellation, `retry: fetch`), rule 11 (token scoped to `BASE_URL`, 401 → logout), new rule 13 (ScreenUtil in public widgets, lint-enforced), all four lint rules listed, `architecture.md` rewritten (it described harness 1.1.0), `utils/widgets/common/` → `ui/`, exception list, skill reference paths. The skill now points at `AGENTS.md` instead of restating the rules.
 - Docs no longer claim the brick patches `pubspec.yaml`, mirrors to `.cursor/skills/` or auto-detects `project_name`.
+- **Repository URLs** still point at the fork (`jenilseawind-glitch`) on purpose: upstream `TheJenilDGohel` ships an older `redux_rxdart_lints` that breaks new apps. Switch to upstream right after the upstream merge (checklist in `docs/contributing.md` §6).
 
 ## 1.5.1
 
