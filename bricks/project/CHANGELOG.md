@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1
+
+- **Fix: `mason upgrade` / `flutter pub get` failed on Flutter ≤ 3.44.** 1.4.0 required Dart ≥ 3.13 / Flutter ≥ 3.47 because the floors were set to the toolchain it was tested on. Floors are now what the dependencies need: hooks Dart ≥ 3.5 (`mason`), generated app Dart ≥ 3.10 / Flutter ≥ 3.38 (`toastification`, `shared_preferences`). CI now also runs the smoke test on Flutter 3.38.
+- Reverted `meta` to `^1.16.0`: `flutter_test` pins `meta` per SDK (1.18.0 on Flutter 3.44), so `^1.19.0` broke `flutter pub get` on older Flutter. Same for `characters` (`^1.4.0`; Flutter 3.38 pins 1.4.0).
+- `post_gen` now formats last and includes the harness `scripts/`, so generated files match the formatter style of the app's own SDK and language version.
+
 ## 1.4.0
 
 - Verified on Flutter 3.47.6 / Dart 3.13.5: `flutter analyze --fatal-infos`, `flutter test` and `custom_lint` all pass on a freshly generated app.

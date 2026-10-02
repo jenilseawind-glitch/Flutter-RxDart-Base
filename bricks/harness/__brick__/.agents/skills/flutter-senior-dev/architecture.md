@@ -1,4 +1,4 @@
-# Base architecture snapshot (project brick 1.4.0 · bloc 1.2.0 · harness 1.6.0)
+# Base architecture snapshot (project brick 1.4.1 · bloc 1.2.1 · harness 1.6.1)
 
 Contents: 1 Layout, 2 Networking, 3 Redux, 4 BLoC and page, 5 UI kit, 6 Routing, 7 Localization and sizing, 8 Bricks, harness and lints, 9 Dependencies.
 

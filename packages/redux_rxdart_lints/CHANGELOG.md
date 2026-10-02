@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- SDK floor lowered to Dart ≥ 3.9 (what `analyzer ^8.4` needs). 0.2.0 required Dart ≥ 3.13, which blocked projects on Flutter ≤ 3.44.
+
 ## 0.2.0
 
 - All rules match on the path relative to `lib/` instead of the absolute path, fixing false positives/negatives caused by checkout location (e.g. a CI workspace named `/repo/`, or a parent folder named `utils/`).

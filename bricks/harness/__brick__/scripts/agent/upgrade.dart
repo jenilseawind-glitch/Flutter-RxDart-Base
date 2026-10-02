@@ -38,13 +38,18 @@ Future<void> main(List<String> args) async {
       'https://github.com/jenilseawind-glitch/Flutter-RxDart-Base.git';
 
   if (checkOnly) {
-    final latest = await _latestUpstreamTag(upstream);
+    final latest = await _latestUpstreamVersion(upstream);
     final hasUpdate = latest != null && _compare(latest, current) > 0;
-    print(
-      hasUpdate
-          ? 'Update available: $current → $latest'
-          : 'Harness $current is up to date${latest == null ? ' (upstream unreachable)' : ''}.',
-    );
+    if (latest == null) {
+      print(
+        'Could not determine the latest harness version from $upstream '
+        '(network or repository unavailable). Installed: $current.',
+      );
+    } else if (hasUpdate) {
+      print('Update available: $current → $latest');
+    } else {
+      print('Harness $current is up to date (upstream: $latest).');
+    }
     final ghOutput = Platform.environment['GITHUB_OUTPUT'];
     if (ghOutput != null) {
       File(ghOutput).writeAsStringSync(
@@ -88,18 +93,28 @@ Future<void> main(List<String> args) async {
       );
     }
 
-    final cmp = _compare(target, current);
-    if (cmp == 0 && !force) {
-      print('Already on $target. Use --force to re-apply.');
-      return;
-    }
-    if (cmp < 0 && !force) {
-      _fail(
-        'Installed brick ($target) is older than this project ($current). '
-        'Run `mason upgrade -g` or pass --force to downgrade.',
+    // A brick registered with `mason add -g` is cached; it only moves
+    // forward with `mason upgrade -g`. Warn when it lags upstream.
+    final latest = await _latestUpstreamVersion(upstream);
+    final staleCache = latest != null && _compare(latest, target) > 0;
+    if (staleCache) {
+      print(
+        'Note: your registered harness brick renders $target, but upstream '
+        'is at $latest. Run `mason upgrade -g` and re-run this script.',
       );
     }
 
+    final cmp = _compare(target, current);
+    if (cmp == 0 && !force) {
+      print(
+        'Already on $target — the version your registered `harness` brick '
+        'renders.\n'
+        'Expected a newer one? Refresh the brick with `mason upgrade -g` '
+        '(or register it: mason add -g harness --git-url $upstream '
+        '--git-path bricks/harness). Use --force to re-apply $target.',
+      );
+      return;
+    }
     final backup = _backup();
     print('Backup: ${backup.path}');
 
@@ -363,7 +378,39 @@ Map<String, dynamic> _readJson(File file) {
   }
 }
 
-Future<String?> _latestUpstreamTag(String repo) async {
+/// Latest harness version published upstream: the `version:` in
+/// `bricks/harness/brick.yaml` on the default branch, falling back to the
+/// highest `v1.2.3` / `harness-v1.2.3` tag. Null when neither is reachable.
+Future<String?> _latestUpstreamVersion(String repo) async {
+  final gh = RegExp(r'github\.com[/:]([^/]+)/([^/]+?)(?:\.git)?/?$')
+      .firstMatch(repo);
+  if (gh != null) {
+    final client = HttpClient()
+      ..connectionTimeout = const Duration(seconds: 10);
+    try {
+      final request = await client.getUrl(
+        Uri.parse(
+          'https://raw.githubusercontent.com/${gh[1]}/${gh[2]}/HEAD/bricks/harness/brick.yaml',
+        ),
+      );
+      final response = await request.close().timeout(
+        const Duration(seconds: 10),
+      );
+      if (response.statusCode == 200) {
+        final body = await response.transform(utf8.decoder).join();
+        final version = RegExp(
+          r'^version:\s*(\S+)',
+          multiLine: true,
+        ).firstMatch(body)?.group(1);
+        if (version != null) return version;
+      }
+    } catch (_) {
+      // Fall through to tags.
+    } finally {
+      client.close(force: true);
+    }
+  }
+
   try {
     final r = await Process.run('git', ['ls-remote', '--tags', repo]);
     if (r.exitCode != 0) return null;

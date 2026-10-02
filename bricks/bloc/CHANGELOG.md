@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+- **Fix:** hook SDK floor lowered to Dart ≥ 3.5 (what `mason` needs). 1.2.0 required Dart ≥ 3.13, which broke `mason upgrade` on Flutter ≤ 3.44.
+
 ## 1.2.0
 
 - BLoC follows Golden Rule #8: `fetch({bool refresh = false})` (was `fetchData()`), `createNewToken()` before any emission, `refresh` keeps current content visible.

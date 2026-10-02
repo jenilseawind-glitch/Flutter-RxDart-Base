@@ -3,7 +3,7 @@ description: Fixture project exercising every redux_rxdart_lints rule.
 publish_to: 'none'
 
 environment:
-  sdk: ^3.13.0
+  sdk: ^3.10.0
 
 dependencies:
   flutter:

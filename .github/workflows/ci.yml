@@ -8,9 +8,15 @@ on:
 
 jobs:
   smoke-test:
-    name: Brick Generation Smoke Test
+    name: Brick Generation Smoke Test (Flutter ${{ matrix.flutter }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # Latest stable we test on, and the minimum we claim to support.
+        # The minimum leg catches SDK floors set higher than dependencies need.
+        flutter: ['3.47.6', '3.38.10']
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -19,7 +25,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.47.6'
+          flutter-version: ${{ matrix.flutter }}
 
       - name: Install tool dependencies
         working-directory: tool

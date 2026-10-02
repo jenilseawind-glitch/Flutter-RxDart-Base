@@ -59,9 +59,27 @@ Nothing changes if the brick fails to render, a backup of every touched file goe
 
 ---
 
+### Upgrading a project from harness ≤ 1.5.x
+
+Projects installed before 1.6.0 carry an old `upgrade.dart` that takes the "latest" version from git tags. The repository has no tags, so it always reports **"Harness is already up to date (version 1.5.0)"**. It cannot upgrade itself, so replace it once by hand:
+
+```bash
+# 1. Make mason render the current brick
+mason add -g harness --git-url https://github.com/jenilseawind-glitch/Flutter-RxDart-Base.git --git-path bricks/harness
+mason upgrade -g
+# 2. Swap in the current upgrade engine
+curl -sSL https://raw.githubusercontent.com/jenilseawind-glitch/Flutter-RxDart-Base/main/bricks/harness/__brick__/scripts/agent/upgrade.dart -o scripts/agent/upgrade.dart
+# 3. Upgrade (memory, team sections and app ids are kept)
+dart run scripts/agent/upgrade.dart
+```
+
+Don't run the old script with `--force`: its merge overwrites the app ids with `com.example.*` and duplicates the memory transclusion. From 1.6.1 on, `--check-only` reads the version from upstream's `brick.yaml`, and the script warns when your registered brick is older than upstream.
+
+---
+
 ## ⚙️ Generation Architecture
 
-`harness` v1.6.0 is a pure-template brick (zero hooks): everything renders
+`harness` v1.6.1 is a pure-template brick (zero hooks): everything renders
 from `__brick__/`, so generation is instant and avoids the Windows `MAX_PATH`
 issues that hook compilation caused in 1.3.x. Note that mason does not keep the
 executable bit: run the wrapper as `bash scripts/agent/verify.sh`, or call
