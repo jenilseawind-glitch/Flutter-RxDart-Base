@@ -63,15 +63,26 @@ Nothing changes if the brick fails to render, a backup of every touched file goe
 
 Projects installed before 1.6.0 carry an old `upgrade.dart` that takes the "latest" version from git tags. The repository has no tags, so it always reports **"Harness is already up to date (version 1.5.0)"**. It cannot upgrade itself, so replace it once by hand:
 
-```bash
-# 1. Make mason render the current brick
-mason add -g harness --git-url https://github.com/jenilseawind-glitch/Flutter-RxDart-Base.git --git-path bricks/harness
-mason upgrade -g
-# 2. Swap in the current upgrade engine
-curl -sSL https://raw.githubusercontent.com/jenilseawind-glitch/Flutter-RxDart-Base/main/bricks/harness/__brick__/scripts/agent/upgrade.dart -o scripts/agent/upgrade.dart
-# 3. Upgrade (memory, team sections and app ids are kept)
-dart run scripts/agent/upgrade.dart
-```
+1. Make mason render the current brick. `mason upgrade -g` only refreshes bricks registered with `mason add -g`. If `mason list -g` doesn't show `harness`, run the `mason add` line first:
+   ```bash
+   mason add -g harness --git-url https://github.com/jenilseawind-glitch/Flutter-RxDart-Base.git --git-path bricks/harness
+   mason upgrade -g
+   ```
+2. Swap in the current upgrade engine.
+
+   macOS / Linux:
+   ```bash
+   curl -sSL https://raw.githubusercontent.com/jenilseawind-glitch/Flutter-RxDart-Base/main/bricks/harness/__brick__/scripts/agent/upgrade.dart -o scripts/agent/upgrade.dart
+   ```
+   Windows (PowerShell). Plain `curl` is an alias for `Invoke-WebRequest` there, so use one of these two:
+   ```powershell
+   Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/jenilseawind-glitch/Flutter-RxDart-Base/main/bricks/harness/__brick__/scripts/agent/upgrade.dart" -OutFile "scripts/agent/upgrade.dart"
+   # or: curl.exe -sSL <same url> -o scripts/agent/upgrade.dart
+   ```
+3. Upgrade. Memory, team sections and app ids are kept:
+   ```bash
+   dart run scripts/agent/upgrade.dart
+   ```
 
 Don't run the old script with `--force`: its merge overwrites the app ids with `com.example.*` and duplicates the memory transclusion. From 1.6.1 on, `--check-only` reads the version from upstream's `brick.yaml`, and the script warns when your registered brick is older than upstream.
 

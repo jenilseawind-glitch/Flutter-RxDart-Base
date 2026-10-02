@@ -4,7 +4,7 @@
 
 - **Fix: "Harness is already up to date" on old projects.** Neither repository has git tags, so pre-1.6 `upgrade.dart` always fell back to `1.5.0` and compared it with the `1.5.0` stamp. `--check-only` now reads the version from upstream's `bricks/harness/brick.yaml` (tags are only a fallback) and says so plainly when it cannot reach upstream, instead of claiming "up to date".
 - `upgrade.dart` warns when the mason-registered brick is older than upstream (stale `mason add -g` cache), and "Already on X" now points to `mason upgrade -g`.
-- Docs: "Upgrading a project from harness ≤ 1.5.x", a 3-step bootstrap, because the old script cannot upgrade itself.
+- Docs: "Upgrading a project from harness ≤ 1.5.x", a 3-step bootstrap, because the old script cannot upgrade itself. Includes Windows PowerShell commands (`Invoke-WebRequest` / `curl.exe`), because plain `curl` is an alias there.
 
 ## 1.6.0
 
