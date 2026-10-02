@@ -1,5 +1,5 @@
-import 'package:analyzer/error/error.dart' show ErrorSeverity;
-import 'package:analyzer/error/listener.dart' show ErrorReporter;
+import 'package:analyzer/error/error.dart' show DiagnosticSeverity;
+import 'package:analyzer/error/listener.dart' show DiagnosticReporter;
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 
 /// Golden Rule #1 (AGENTS.md): Repository is Transport ONLY.
@@ -13,13 +13,13 @@ class RepoTransportOnly extends DartLintRule {
     problemMessage:
         'Repository must not parse models. Call .fromJson() in the BLoC, '
         'not in repo/ files (AGENTS.md Golden Rule #1).',
-    errorSeverity: ErrorSeverity.ERROR,
+    errorSeverity: DiagnosticSeverity.ERROR,
   );
 
   @override
   void run(
     CustomLintResolver resolver,
-    ErrorReporter reporter,
+    DiagnosticReporter reporter,
     CustomLintContext context,
   ) {
     final path = resolver.source.fullName.replaceAll('\\', '/');

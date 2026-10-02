@@ -1,5 +1,5 @@
-import 'package:analyzer/error/error.dart' show ErrorSeverity;
-import 'package:analyzer/error/listener.dart' show ErrorReporter;
+import 'package:analyzer/error/error.dart' show DiagnosticSeverity;
+import 'package:analyzer/error/listener.dart' show DiagnosticReporter;
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 
 /// Golden Rule #4 (AGENTS.md): Zero RxDart Outside BLoC.
@@ -13,13 +13,13 @@ class NoRxdartInUi extends DartLintRule {
     problemMessage:
         'RxDart must not be imported outside bloc/ files. UI widgets consume '
         'Stream<T> / ApiResponse<T> only (AGENTS.md Golden Rule #4).',
-    errorSeverity: ErrorSeverity.ERROR,
+    errorSeverity: DiagnosticSeverity.ERROR,
   );
 
   @override
   void run(
     CustomLintResolver resolver,
-    ErrorReporter reporter,
+    DiagnosticReporter reporter,
     CustomLintContext context,
   ) {
     final path = resolver.source.fullName.replaceAll('\\', '/');

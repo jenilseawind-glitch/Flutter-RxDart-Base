@@ -18,7 +18,7 @@ In the consuming Flutter project's `pubspec.yaml`:
 
 ```yaml
 dev_dependencies:
-  custom_lint: ^0.7.0
+  custom_lint: ^0.8.1
   redux_rxdart_lints:
     git:
       url: https://github.com/TheJenilDGohel/Flutter-RxDart-Base.git

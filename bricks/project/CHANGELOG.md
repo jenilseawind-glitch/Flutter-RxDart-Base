@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `redux_rxdart_lints` migrated to `analyzer ^8` / `custom_lint_builder ^0.8.1` (`DiagnosticSeverity`, `DiagnosticReporter`). `custom_lint 0.8.0` (analyzer 7) crashes on Flutter 3.47.x / Dart 3.13 with `Missing implementation of visitDotShorthandPropertyAccess`. Scaffolded `pubspec.yaml` now requires `custom_lint: ^0.8.1`. Not verified on Flutter 3.44 / Dart 3.12.
+
 ## 1.3.2
 
 - Fixed `redux_rxdart_lints` dependency in scaffolded `pubspec.yaml` to reference the remote Git repository instead of a relative local path.
