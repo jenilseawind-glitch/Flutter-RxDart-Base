@@ -25,8 +25,16 @@ class RepoTransportOnly extends DartLintRule {
     final path = resolver.source.fullName.replaceAll('\\', '/');
     if (!path.contains('/repo/')) return;
 
+    // `Model.fromJson(x)` is a constructor call (InstanceCreationExpression)
+    // once resolved; `Model.fromJson(x)` on a static method or `x.fromJson(y)`
+    // stays a MethodInvocation. Flag both.
     context.registry.addMethodInvocation((node) {
       if (node.methodName.name == 'fromJson') {
+        reporter.atNode(node, _code);
+      }
+    });
+    context.registry.addInstanceCreationExpression((node) {
+      if (node.constructorName.name?.name == 'fromJson') {
         reporter.atNode(node, _code);
       }
     });
