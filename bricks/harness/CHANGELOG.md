@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.6.0
+
+Agent discovery, tooling and feedback loops (see `docs/ai-harness-rnd.md` in the base repo for the research behind each change).
+
+- **Claude Code actually loads the harness.** `CLAUDE.md` now imports `@AGENTS.md` (it previously only *mentioned* it, so the golden rules were not in context). The skill gets a `.claude/skills/` entry point and the QA subagent moved to `.claude/agents/` — Claude Code never discovered them under `.agents/`.
+- **Dart & Flutter MCP server** registered in `.mcp.json` and `.cursor/mcp.json` (`dart mcp-server`, in the SDK): analyzer, LSP, pub.dev search, hot reload, runtime errors, widget inspector.
+- **Edit hook** (`.claude/settings.json` → `scripts/agent/on_edit.dart`): formats and analyzes each edited Dart file and feeds issues back to the agent immediately. Plus a permission allowlist for the safe dev commands and a force-push deny.
+- **`verify.dart`**: one cross-platform gate (format → analyze → custom lints → **tests** → snapshot; tests were never part of the gate). `verify.sh` / `verify.ps1` are thin wrappers. `--fast` mode.
+- **Snapshot** is deterministic (no timestamp, git log or second analyzer run) and more useful: features without tests, route paths, API endpoints, `AppState` fields, dependencies.
+- **`upgrade.dart` rewritten.** Fixed: stamping success when `mason make` failed; overwriting the Android/iOS ids with `com.example.<name>`; duplicating the `@.harness/active-context.md` line on every run; deprecated `::set-output`; no backup of Tier-1 files; versions taken from a git tag instead of the rendered brick. Contracts now merge on an explicit `harness:project-rules` marker; legacy files are migrated. `version.json` records the install vars and an upgrade history.
+- **Content corrected against the 1.4.0 project brick**: rule 2 (`userFacingMessage(context)`), rule 8 (cancellation, `retry: fetch`), rule 11 (token scoped to `BASE_URL`, 401 → logout), new rule 13 (ScreenUtil in public widgets, lint-enforced), all four lint rules listed, `architecture.md` rewritten (it described harness 1.1.0), `utils/widgets/common/` → `ui/`, exception list, skill reference paths. The skill now points at `AGENTS.md` instead of restating the rules.
+- Docs no longer claim the brick patches `pubspec.yaml`, mirrors to `.cursor/skills/` or auto-detects `project_name`.
+- **Repository URLs** still point at the fork (`jenilseawind-glitch`) on purpose: upstream `TheJenilDGohel` ships an older `redux_rxdart_lints` that breaks new apps. Switch to upstream right after the upstream merge (checklist in `docs/contributing.md` §6).
+
 ## 1.5.1
 
 - **Context bloat reduction**: Tightened `active-context.md` template with enforced line-length caps (Current Focus: 2-3 lines, Recent Tasks: 1-2 lines each, Key Decisions: 1-2 lines each), overflow-to-`progress.md` instructions, Known Issues cleanup rules (delete resolved items), `⏸ deferred by decision` line type, and `commit:pending` anti-staleness guidance.

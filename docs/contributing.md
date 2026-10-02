@@ -54,9 +54,36 @@ analyzer-enforced.
 
 ## 6. URLs point at one canonical org
 
-All git-dependency URLs, `mason add -g --git-url` examples, and README links use
-`https://github.com/TheJenilDGohel/Flutter-RxDart-Base.git`. If the working remote (`git remote -v`)
-ever differs from this, that's a signal to ask before writing new URLs, not to guess.
+The canonical repository is **`https://github.com/TheJenilDGohel/Flutter-RxDart-Base.git`**
+(the upstream). All git-dependency URLs, `mason add -g --git-url` examples and README links
+should use it. If the working remote (`git remote -v`) differs, ask before writing new URLs;
+don't guess.
+
+### Temporary exception: fork URLs until upstream merges
+
+Development currently happens in the fork `jenilseawind-glitch/Flutter-RxDart-Base`, which is
+ahead of upstream (project 1.4.0, bloc 1.2.0, harness 1.6.0, `redux_rxdart_lints` 0.2.0 on
+analyzer 8). Upstream `main` still ships `redux_rxdart_lints` 0.1.0 on analyzer 7 /
+`custom_lint_builder ^0.7`, which conflicts with the template's `custom_lint ^0.8.1` and crashes
+on Flutter 3.47. Pointing generated apps at upstream today would break `flutter pub get` in
+every new project, so these **functional** URLs intentionally name the fork:
+
+| File | What depends on it |
+|---|---|
+| `bricks/project/__brick__/pubspec.yaml` | `redux_rxdart_lints` git dependency of every generated app |
+| `bricks/harness/__brick__/.harness/version.json` | `upstream_repo` used by `upgrade.dart` |
+| `bricks/harness/__brick__/scripts/agent/upgrade.dart` | fallback `upstream` URL (`--check-only`, `mason add` hint) |
+| `packages/redux_rxdart_lints/README.md`, `docs/packages/redux_rxdart_lints.md` | install snippet |
+| `docs/bricks/bloc.md`, `docs/bricks/harness.md` | CHANGELOG links |
+
+**After this work is merged into `TheJenilDGohel/Flutter-RxDart-Base` (maintainer or AI agent):**
+
+1. `grep -rn "jenilseawind-glitch" --exclude-dir=.git .` — every hit is in the table above.
+2. Replace each with `TheJenilDGohel`, delete this subsection, and remove the
+   `fork-url:` comments next to the URLs (`grep -rn "fork-url"`).
+3. Bump `project` and `harness` (patch) with a CHANGELOG line: "URLs point at the canonical
+   upstream repository."
+4. Run the gates in `AGENTS.md`. `tool/smoke.dart` accepts either org, so it stays green.
 
 ## 7. Commit policy
 

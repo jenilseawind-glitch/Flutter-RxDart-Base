@@ -1,81 +1,51 @@
 # AI Agent Contract & Architecture Standards
 
+Read by every coding agent (Claude Code, Codex, Cursor, Copilot, Gemini CLI, ...).
+Rules marked 🔒 fail the quality gate when broken (`redux_rxdart_lints`).
+
 ## 1. Architecture: Hybrid Redux + RxDart + Dio
-- **Redux (Global)**: App-wide session, auth token, user profile, persistence.
-- **RxDart BLoC (Ephemeral)**: Screen-level state, forms, pagination, searches.
-- **Dio (Networking)**: HTTP/2 with interceptor chain (`AuthInterceptor`, `ErrorMappingInterceptor`).
+- **Redux (global)**: session data that must survive a restart — `authToken`, `userData`, `locale`. Nothing else.
+- **RxDart BLoC (per screen)**: fetch state, forms, pagination, search, toggles.
+- **Dio**: HTTP/2, fixed interceptor order — Connectivity → Auth → PlatformInjector → Retry → ErrorMapping. Never reorder.
 
-## 2. Inviolable Golden Rules
-1. **Repository is Transport ONLY**:
-   - MUST ONLY call `ApiBaseHelper` and return raw `Map<String, dynamic>`.
-   - ❌ NEVER call `Model.fromJson` in Repository.
-2. **BLoC is Business Logic & State Owner**:
-   - Awaits raw response from repo, parses via `Model.fromJson(json)`, catches errors, and emits `ApiResponse<T>` (`LoadingResponse`, `SuccessResponse`, `ErrorResponse`).
-   - Use `e.userMessage` from `exception_ext.dart` for UI errors.
-3. **Zero `setState`**: Strictly forbidden in all widgets. Use stream builders (`AppResponseBuilder`, `StreamBuilder`).
-4. **Zero RxDart Outside BLoC**:
-   - UI widgets MUST NEVER import or use RxDart (`BehaviorSubject`, `PublishSubject`).
-   - UI widgets ONLY consume standard Dart `Stream<T>` / `ApiResponse<T>`.
-5. **Rule of 2 for Widgets**:
-   - If a widget or layout is used in $\ge 2$ places, extract it to `utils/widgets/ui/`.
-   - If an existing widget can be reused with parameter tweaks, reuse it. NEVER duplicate widget trees.
-6. **Universal Presentation**:
-   - Baseline is standard `Scaffold` (do not force specialized wrappers unless requested).
-7. **Form Pattern B (TextEditingController)**:
-   - `StatefulWidget` owns and disposes `TextEditingController`s.
-   - Pass string values directly to BLoC methods: `_bloc.submit(email: _emailCtrl.text)`.
-   - BLoC streams drive loading spinners and error banners.
-8. **Concurrency & Fetch (Pattern A)**:
-   - Signature: `Future<void> fetch({bool refresh = false}) async`.
-   - Always call `createNewToken()` at start of fetch to cancel prior requests.
-   - For live search: use `PublishSubject<String>` with `.debounceTime(Duration(milliseconds: 300)).distinct()`.
-9. **One-Off UI Events (Pattern A)**:
-   - Toasts, snackbars, navigation use `PublishSubject<T>` in BLoC.
-   - UI listens via `StreamSubscription` in `initState()` and cancels in `dispose()`.
-10. **Redux Bridge (Pattern B)**:
-    - When feature mutation updates global session (e.g. profile update):
-    - BLoC emits updated model -> UI dispatches `StoreProvider.of(context).dispatch(...)` after successful render.
-    - Prevents saving corrupt state to disk if UI breaks.
-11. **Token Injection on Public Endpoints**:
-    - `AuthInterceptor` attaches `Bearer <token>` if present to all requests (backends safely ignore on public routes).
-12. **Defensive JSON Parsing**:
-    - Numbers: `(json['id'] as num?)?.toInt() ?? 0`, `(json['amount'] as num?)?.toDouble() ?? 0.0`.
-    - Strings: `json['name']?.toString() ?? ''`.
-    - Lists: `(json['items'] as List<dynamic>? ?? []).map((e) => Item.fromJson(e as Map<String, dynamic>)).toList()`.
-    - Dates: `DateTime.tryParse(json['date']?.toString() ?? '') ?? DateTime.now()`.
+## 2. Golden Rules
+1. 🔒 **Repository is transport only**: call `ApiBaseHelper`, return the raw `Map<String, dynamic>`. Never `fromJson`/`fromMap` (calls or tear-offs) in `repo/` or `*_repo.dart`.
+2. **BLoC owns logic and state**: await the repo, parse with `Model.fromJson`, emit `ApiResponse<T>`. Widgets show errors with `error.userFacingMessage(context)` (or let `AppResponseBuilder` do it). Never display `e.toString()`.
+3. 🔒 **Zero `setState`** in feature widgets. Drive UI from streams (`AppResponseBuilder`, `StreamBuilder`). Only design-system primitives in `lib/utils/widgets/ui/` may hold purely visual state.
+4. 🔒 **Zero RxDart outside BLoCs**: widgets never import `rxdart`; they consume plain `Stream<T>` / `ApiResponse<T>`.
+5. **Rule of 2**: a widget used in ≥ 2 places moves to `lib/utils/widgets/ui/`. Reuse with parameters before duplicating.
+6. **Presentation**: standard `Scaffold` by default; `AppScaffold` when the shared chrome is wanted.
+7. **Forms**: the `StatefulWidget` owns and disposes `TextEditingController`s and passes values to BLoC methods (`_bloc.submit(email: _email.text)`). BLoC streams drive spinners and error banners.
+8. **Fetch**: `Future<void> fetch({bool refresh = false})`; call `createNewToken()` first (a newer fetch cancels the older one); ignore `RequestCancelledException`; emit errors with `retry: fetch`. Live search: `PublishSubject<String>` + `.debounceTime(300ms).distinct()`.
+9. **One-off UI events** (toast, navigation): a `PublishSubject` in the BLoC, subscribed in `initState()`, cancelled in `dispose()`.
+10. **Redux bridge**: when a feature changes session data, the BLoC emits the new model and the UI dispatches to the store after it renders.
+11. **Auth**: `AuthInterceptor` attaches the bearer token only to the `BASE_URL` host. A 401 with a token dispatches `LogoutAction` automatically — don't add per-screen 401 handling.
+12. **Defensive JSON parsing**: `(json['id'] as num?)?.toInt() ?? 0`, `json['name']?.toString() ?? ''`, `(json['items'] as List? ?? []).map(...)`, `DateTime.tryParse(json['at']?.toString() ?? '')`.
+13. 🔒 **ScreenUtil only in public widgets**: `.w/.h/.r/.sp` inside a private (`_Foo`) widget is not rebuilt on resize. Make the widget public.
 
-## 3. Backend API Discovery
-- Inspect workspace for `*.postman_collection.json` before building network calls.
-- If missing, check OpenAPI/Swagger definitions, documentation, or perform targeted web search.
+## 3. Before Writing Network Code
+Look for `*.postman_collection.json`, then OpenAPI/Swagger, then docs. Add endpoints to `lib/networking/api_constants.dart`. Never guess a response shape — ask if no contract exists.
 
-## 4. Deterministic Commands & Verification Quality Gate
-- Scaffold + Wire in one step: `dart run scripts/agent/wire_route.dart <name> [optional_path]`
-  Auto-runs `mason make bloc --feature_name <name>` first if the feature doesn't exist yet.
-- Quality Gate: `powershell -ExecutionPolicy Bypass -File scripts/agent/verify.ps1` (Win) or `./scripts/agent/verify.sh` (Mac/Linux).
-  Must pass `dart format --set-exit-if-changed .` and `flutter analyze --fatal-infos`.
-- Harness Upgrade & Migration: `dart run scripts/agent/upgrade.dart`.
-  Performs 3-tier safe upgrade: overwrites engine scripts and skills, strictly protects `.harness/active-context.md` (0 data loss), and smart-merges custom project rules.
-- Hot-reload vs full build: Rely on hot reload/restart during feature work; only full restart on native dependency/asset changes.
+## 4. Tooling for Agents
+- **Scaffold + route in one step**: `dart run scripts/agent/wire_route.dart <feature_name> [route_path]` (runs `mason make bloc` if the feature is missing).
+- **Quality gate** (must pass before proposing a commit): `dart run scripts/agent/verify.dart` — format, analyze, custom lints, tests, snapshot. `--fast` = format + analyze only. Wrappers: `bash scripts/agent/verify.sh`, `powershell -File scripts/agent/verify.ps1`.
+- **Dart & Flutter MCP server** (`.mcp.json` → `dart mcp-server`, ships with the SDK): `analyze_files`, `lsp` (hover, definitions), `pub` / `pub_dev_search` (dependencies), `read_package_uris`, and against a running debug app `hot_reload`, `hot_restart`, `get_runtime_errors`, `widget_inspector`, `flutter_driver_command`. Prefer these over guessing APIs or reading pub-cache sources. Formatting and tests go through `verify.dart`.
+- **Edit hook** (Claude Code): every edited Dart file is formatted and analyzed immediately; fix reported issues before moving on.
+- **Harness upgrade**: `dart run scripts/agent/upgrade.dart` (keeps `.harness/` memory and everything below the project-rules marker).
 
-## 5. Golden Rules Are Analyzer-Enforced
-Rules #1, #3, #4 (repo-transport-only, zero setState, zero RxDart outside BLoC) are enforced at
-`flutter analyze` time by the `redux_rxdart_lints` custom_lint plugin (`packages/redux_rxdart_lints`
-in the base repo). Violations are compile-gate errors, not just prose — the quality gate above
-will already catch them.
+## 5. Git
+- Never commit or push unless asked. Run the quality gate first.
+- Conventional Commits: `feat(<feature>): ...`, `fix(...)`, `refactor(...)`, `chore(...)`.
 
-## 6. Git Commit Policy
-- Always run `verify.ps1` (or `verify.sh`) locally before proposing a commit.
-- Use Conventional Commits format (`feat:`, `fix:`, `refactor:`, `chore:`).
-- For scaffolded code, use `feat(<feature_name>): scaffold initial architecture`.
+## 6. Project Memory (`.harness/`)
+- **Start of task**: `.harness/active-context.md` is already in context for Claude Code; other agents read it first. Read `.harness/system-snapshot.md` for the project map (features, routes, endpoints, state, deps).
+- **End of task**: update `active-context.md`:
+  - `Current Focus`: 2-3 lines — what finished, what's next.
+  - `Recent Tasks`: newest first, 1-2 lines each with proof (`commit:a1b2c3d` or `file:lib/...`). Max 5; move the oldest to `progress.md` as one line `[YYYY-MM-DD] type(scope): what (proof)`.
+  - `Key Decisions`: 1-2 lines, decision + reason.
+  - `Known Issues`: only what is still broken. Delete fixed items. `⏸ deferred by decision: <reason>` for items the owner chose to skip.
+- Never edit `system-snapshot.md` (generated by `verify`). Read `progress.md` only when asked for history.
 
-## 7. Project Context (.harness/)
-- **Before starting**: read `.harness/active-context.md` (current state) and `.harness/system-snapshot.md` (project scan).
-- **After completing a task**: update `.harness/active-context.md`:
-  - `Current Focus`: 2-3 lines — what you just finished + what's next.
-  - `Recent Tasks`: prepend entry, 1-2 lines with proof (`commit:a1b2c3d` or `file:lib/features/chat/...`). Cap at 5 — overflow goes to `progress.md` as ONE line: `[YYYY-MM-DD] type(scope): what (proof)`. Drop `commit:pending` wording once committed — stale pending markers mislead later sessions.
-  - `Key Decisions`: 1-2 lines each. State the decision and reason. No verification narrative.
-  - `Known Issues`: only things still broken. **Delete** resolved items — no "was X, now fixed" history. Use `⏸ deferred by decision: <reason>` for items the owner chose to skip, so later sessions don't re-raise them.
-- **Never** edit `.harness/system-snapshot.md` — it is script-generated only.
-- **Never** read `.harness/progress.md` unless explicitly asked for historical context.
-- Regenerate snapshot: `dart run scripts/agent/snapshot.dart`.
-
+<!-- harness:project-rules — Everything below this line is yours. `upgrade.dart` keeps it verbatim. -->
+## 7. Project-Specific Rules
+_Add team conventions, backend quirks and decisions that every agent must follow._

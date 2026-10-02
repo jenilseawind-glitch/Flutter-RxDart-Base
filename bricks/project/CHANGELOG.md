@@ -1,6 +1,24 @@
 # Changelog
 
-## Unreleased
+## 1.4.0
+
+- Verified on Flutter 3.47.6 / Dart 3.13.5: `flutter analyze --fatal-infos`, `flutter test` and `custom_lint` all pass on a freshly generated app.
+- Raised the SDK floor to Dart `>=3.13.0` and Flutter `>=3.47.0`; hook SDK floor raised to match.
+- Renamed the private `_CustomToast` to `CustomToast` so the scaffolded app passes `no_screenutil_in_private_widget`.
+- **Security**: `AuthInterceptor` only attaches the bearer token to requests for the `BASE_URL` host; third-party absolute URLs never receive it.
+- **Session expiry**: a 401 while a token is held dispatches `LogoutAction` once (was a TODO), so expired tokens are not resent forever.
+- **Error mapping**: added `ForbiddenException` (403), `ValidationException` (422, carries the server message), `TooManyRequestsException` (429) and `MalformedResponseException`; any 5xx maps to `InternalServerErrorException` with its status code. Server `message`/`error` fields are now read for 4xx/5xx. `ApiException` gained `statusCode`. New localized strings for timeout, 403 and 429.
+- **Retry policy**: only idempotent methods (GET/HEAD/OPTIONS/PUT/DELETE) are retried, 2 retries (1s, 3s) instead of 3; POST/PATCH are never replayed; already-mapped errors (e.g. offline) are not retried.
+- `ApiBaseHelper` never throws a raw `TypeError` on non-JSON bodies (`MalformedResponseException` instead); removed the redundant `ApiBaseHelper.init()`.
+- **Persistence**: writes are queued so they finish in dispatch order (no stale token after a fast login→logout), only changed slices are written, and failures are logged instead of becoming uncaught errors. Storage keys centralised in `PersistenceKeys`.
+- **Startup**: `AppStore.init()` no longer crashes on unreadable secure storage or corrupt JSON — it wipes the session and starts signed out. `AppStore.authToken`/`dispatch` are safe before `init()`. Redux logging middleware runs in debug builds only.
+- `LogoutAction` keeps the user's locale.
+- **Hooks**: new `pre_gen` validates `project_name`, `android_package_name`, `ios_bundle_id` and the target directory *before* any file is written. `ios_bundle_id` is now actually applied (underscores normalised to `-`; `RunnerTests` keeps its suffix). The brick no longer ships a `.gitignore` that replaced Flutter's defaults — harness lines are merged into the existing file. A failed step leaves files in place and prints the command to re-run. The auto-installed harness uses `--on-conflict skip`, so existing `CLAUDE.md`/`AGENTS.md` are never overwritten.
+- `post_gen` runs `dart format lib test`: a fresh project previously failed its own `verify` format gate (26 files) under the Dart 3.13 formatter.
+- `.env` is tracked (it is a bundled asset, so ignoring it broke fresh clones) and documents that its contents ship inside the app.
+- Removed the duplicate, unused `lib/utils/widgets/app_scaffold.dart`.
+- Dependencies: `flutter_secure_storage ^11.2.0`, `meta ^1.19.0`, `change_app_package_name ^1.5.0`.
+- **Repository URLs** still point at the fork (`jenilseawind-glitch`) on purpose: upstream `TheJenilDGohel` ships an older `redux_rxdart_lints` that breaks new apps. Switch to upstream right after the upstream merge (checklist in `docs/contributing.md` §6).
 
 - `redux_rxdart_lints` migrated to `analyzer ^8` / `custom_lint_builder ^0.8.1` (`DiagnosticSeverity`, `DiagnosticReporter`). `custom_lint 0.8.0` (analyzer 7) crashes on Flutter 3.47.x / Dart 3.13 with `Missing implementation of visitDotShorthandPropertyAccess`. Scaffolded `pubspec.yaml` now requires `custom_lint: ^0.8.1`. Not verified on Flutter 3.44 / Dart 3.12.
 

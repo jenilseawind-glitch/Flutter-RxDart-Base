@@ -1,91 +1,70 @@
 # `harness` Brick
 
-Scaffolds an AI Agent Harness onto any Flutter project: a universal cognitive
-contract (`AGENTS.md`), a 1-line native transclusion for Claude Code
-(`CLAUDE.md`), a universal senior-dev skill (`.agents/skills/`, mirrored to
-`.cursor/skills/`), deterministic CLI tooling, and analyzer-enforced golden
-rules. Works standalone on any Flutter project, or auto-installed by `project`
-via the `include_harness` prompt.
+Scaffolds an AI agent harness onto a Flutter project built on this base: one
+cross-tool contract (`AGENTS.md`), native wiring for Claude Code (memory import,
+skill, QA subagent, an edit hook and a permission allowlist), the official Dart &
+Flutter MCP server for every MCP-capable agent, a cross-platform quality gate,
+and project memory that survives sessions and harness upgrades. Installed
+automatically by `project` (`include_harness`), or standalone.
 
 ---
 
 ## 📋 Usage
 
 ```bash
-mason make harness
+mason make harness --project_name my_app \
+  --android_package_name com.acme.my_app --ios_bundle_id com.acme.my-app
 ```
 
-`project_name` is auto-detected from `pubspec.yaml` if left blank (no prompt
-needed for CI/CD or AI agents running non-interactively).
+The ids are written into `CLAUDE.md` and recorded in `.harness/version.json`
+so upgrades reuse them. The brick has no hooks; it does **not** edit
+`pubspec.yaml` — the `project` brick adds `custom_lint` and
+`redux_rxdart_lints` when `include_harness` is on. On an existing project,
+add them yourself (see [`redux_rxdart_lints`](../packages/redux_rxdart_lints.md)).
 
 ---
 
 ## 🏗️ What Gets Generated
 
-- **`AGENTS.md`**: architecture contract — Redux+RxDart+Dio layering, 12
-  inviolable golden rules, backend API discovery convention, deterministic
-  commands, git commit policy. Read by any AGENTS.md-compatible agent
-  (Claude Code, Cursor, Copilot, Codex, 20+ tools).
-- **`.agents/skills/flutter-senior-dev/`**: Universal skill that acts as a
-  senior Flutter developer for this stack. Auto-discovered by any tool that
-  reads `.agents/skills/` (Antigravity, Gemini, and the growing list of
-  AGENTS.md-ecosystem tools). Includes golden-rules summary, architecture
-  snapshot, planning checklist (neutral-mode-first), and known base gaps.
-  References `AGENTS.md` as the authoritative source. Includes focused
-  reference docs (`api-layer.md`, `redux-vs-rxdart.md`, `ui-conventions.md`)
-  loaded only when needed.
-- **`.agents/agents/flutter-qa.md`**: On-demand QA reviewer agent. Runs once
-  on Sonnet, checks 5 critical areas, and reports findings. Invoked explicitly.
-- **`CLAUDE.md`**: Lean always-loaded project memory (~50 lines) with the
-  state-placement rule, folder map, daily workflow, and hard rules. References
-  `AGENTS.md` for the full golden rules contract.
-- **`scripts/agent/wire_route.dart`**: one command scaffolds a feature (via
-  `mason make bloc`, if it doesn't exist yet) *and* wires its route constant +
-  `onGenerateRoute` case into `routes.dart` / `app_router.dart`. Detects
-  incompatible declarative routers (`go_router`, `auto_route`) and fails loud
-  with manual-wiring instructions instead of guessing.
-- **`.harness/` Context Store**: token-efficient cross-session memory for AI
-  agents. Contains `system-snapshot.md` (auto-generated, always accurate project
-  state), `active-context.md` (agent-maintained handoff log), and `version.json` (version manifest).
-- **`scripts/agent/upgrade.dart`**: Autonomous 3-Tier Migration Engine. Safely upgrades
-  installed harness components from upstream releases without losing ongoing
-  sprint context (`active-context.md`) or custom team rules (`AGENTS.md`).
-- **`scripts/agent/snapshot.dart`**: generates deterministic, LLM-free project
-  snapshots (features, routes, commits, analysis) for the context store.
-- **`scripts/agent/verify.ps1` / `verify.sh`**: deterministic quality gate —
-  `dart format --set-exit-if-changed .` + `flutter analyze --fatal-infos` +
-  `dart run scripts/agent/snapshot.dart`.
-- **Analyzer enforcement**: patches the project's `pubspec.yaml` (adds
-  `custom_lint` + `redux_rxdart_lints` dev-dependency) and
-  `analysis_options.yaml` (`analyzer.plugins: [custom_lint]`) so Golden Rules
-  #1 (repo-transport-only), #3 (zero setState), #4 (zero RxDart outside BLoC)
-  are `flutter analyze` errors, not just prose an agent has to remember. See
-  [`packages/redux_rxdart_lints`](../packages/redux_rxdart_lints.md).
-
-Run `dart pub get` (or `flutter pub get`) after install to fetch the lint
-plugin.
+| Path | For | What it does |
+|---|---|---|
+| `AGENTS.md` | every agent | The contract: architecture, 13 golden rules (🔒 = lint-enforced), API-discovery order, tooling, git policy, memory protocol. Everything below the `harness:project-rules` marker belongs to the team and survives upgrades. |
+| `CLAUDE.md` | Claude Code | Imports `@AGENTS.md`, adds Claude-specific notes and app ids, transcludes `.harness/active-context.md`. |
+| `.claude/settings.json` | Claude Code | `PostToolUse` hook → `scripts/agent/on_edit.dart`; allowlist for format/analyze/test/verify/`mason make bloc` and the `dart` MCP server; force-push denied. |
+| `.claude/skills/flutter-senior-dev/` | Claude Code | Entry point that loads the shared skill below. |
+| `.claude/agents/flutter-qa.md` | Claude Code | One-shot review subagent: runs the gate, then checks what tools can't. |
+| `.agents/skills/flutter-senior-dev/` | Codex, Cursor, Gemini CLI, OpenCode, ... | Shared [Agent Skills](https://agentskills.io) skill: workflows, architecture snapshot, API/state/UI references, known gaps, planning checklist. |
+| `.mcp.json`, `.cursor/mcp.json` | MCP clients | Registers `dart mcp-server` (ships with the Dart SDK): analyzer, LSP, pub.dev search, and hot reload / runtime errors / widget inspector on a running app. |
+| `scripts/agent/verify.dart` (+ `.sh`/`.ps1`) | everyone, CI | Quality gate: format → analyze → custom lints → tests → snapshot. `--fast` for format + analyze. |
+| `scripts/agent/on_edit.dart` | hook | Formats and analyzes the edited Dart file; reports issues back to the agent (exit 2). |
+| `scripts/agent/wire_route.dart` | everyone | Scaffolds a feature with `mason make bloc` if missing and wires its route. Refuses to guess with `go_router` / `auto_route`. |
+| `scripts/agent/snapshot.dart` | memory | Deterministic `.harness/system-snapshot.md`: features (and which lack tests), routes, endpoints, `AppState` fields, dependencies. |
+| `scripts/agent/upgrade.dart` | maintainers | Upgrades the harness in place (below). |
+| `.harness/` | memory | `active-context.md` (agent-maintained, capped), `progress.md` (append-only log), `version.json` (version, ids, upgrade history). |
 
 ---
 
-## 🔄 Autonomous 3-Tier Migration Engine
-
-When upgrading an existing project to a new harness release:
+## 🔄 Upgrading an Existing Project
 
 ```bash
-dart run scripts/agent/upgrade.dart
+mason upgrade -g                       # refresh the registered harness brick
+dart run scripts/agent/upgrade.dart    # --check-only / --force
 ```
 
-1. **Tier 1 (Core Engine & Tools)**: Overwrites `scripts/agent/` and `.agents/skills/` cleanly with upstream improvements.
-2. **Tier 2 (User Session Memory)**: **Strictly protects** `.harness/active-context.md` and `.harness/progress.md`—zero loss of ongoing tasks or architectural decisions.
-3. **Tier 3 (Shared Contract)**: Smart-merges `AGENTS.md` and `CLAUDE.md`, adopting upstream rule evolutions while preserving custom project rules and platform workarounds.
+1. **Managed** — `scripts/agent/`, the skill and the QA subagent are replaced.
+2. **Memory** — `.harness/active-context.md` and `progress.md` are never touched (one log line is added to Recent Tasks).
+3. **Contracts** — `AGENTS.md` / `CLAUDE.md` get the new template above the `harness:project-rules` marker; everything below it is kept verbatim. Pre-1.6 files without the marker have their custom sections recovered and moved below it. Config you may have edited (`.claude/settings.json`, `.mcp.json`) is only added when missing.
+
+Nothing changes if the brick fails to render, a backup of every touched file goes to `.harness/.backup_<timestamp>/` (last three kept), and the app ids come from `version.json` (or, for older projects, the old `CLAUDE.md` / platform files) — never a `com.example` guess. `--check-only` writes `has_update` / `new_version` to `$GITHUB_OUTPUT` for CI.
 
 ---
 
 ## ⚙️ Generation Architecture
 
-`harness` v1.5.0 is a pure-template brick (zero hooks):
-- Templates for `.agents/skills/`, `.cursor/skills/`, `.harness/`, `scripts/agent/`, `AGENTS.md`, and `CLAUDE.md` are rendered directly from `__brick__/`.
-- No hook compilation or sub-process execution occurs during `mason make`, eliminating Windows path-length (`MAX_PATH`) and directory-scanning issues.
-- Generation completes deterministically in ~50ms across all platforms.
+`harness` v1.6.0 is a pure-template brick (zero hooks): everything renders
+from `__brick__/`, so generation is instant and avoids the Windows `MAX_PATH`
+issues that hook compilation caused in 1.3.x. Note that mason does not keep the
+executable bit: run the wrapper as `bash scripts/agent/verify.sh`, or call
+`dart run scripts/agent/verify.dart` directly.
 
-See [`CHANGELOG.md`](https://github.com/TheJenilDGohel/Flutter-RxDart-Base/blob/main/bricks/harness/CHANGELOG.md) for version history.
+See [`CHANGELOG.md`](https://github.com/jenilseawind-glitch/Flutter-RxDart-Base/blob/main/bricks/harness/CHANGELOG.md) for version history.

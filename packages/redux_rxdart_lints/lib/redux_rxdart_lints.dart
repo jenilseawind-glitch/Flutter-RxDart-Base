@@ -10,9 +10,9 @@ PluginBase createPlugin() => _ReduxRxdartLinter();
 class _ReduxRxdartLinter extends PluginBase {
   @override
   List<LintRule> getLintRules(CustomLintConfigs configs) => [
-        NoRxdartInUi(),
-        NoScreenutilInPrivateWidget(),
-        NoSetStateInWidget(),
-        RepoTransportOnly(),
-      ];
+    NoRxdartInUi(),
+    NoScreenutilInPrivateWidget(),
+    NoSetStateInWidget(),
+    RepoTransportOnly(),
+  ];
 }
