@@ -42,22 +42,14 @@ Future<void> run(HookContext context) async {
     exit(1);
   }
 
-  // Templates are rendered through mustache, so normalise formatting to the
-  // installed SDK's formatter; the harness quality gate checks it.
-  final formatResult = await Process.run('dart', [
-    'format',
-    'lib',
-    'test',
-  ], runInShell: true);
-  if (formatResult.exitCode != 0) {
-    context.logger.warn('dart format failed: ${formatResult.stderr}');
-  }
-
-  final removeResult = await Process.run('flutter', [
-    'pub',
-    'remove',
-    'change_app_package_name',
-  ], runInShell: true);
+  final removeResult = await Process.run(
+      'flutter',
+      [
+        'pub',
+        'remove',
+        'change_app_package_name',
+      ],
+      runInShell: true);
   if (removeResult.exitCode != 0) {
     context.logger.warn(
       'Could not remove the one-shot change_app_package_name dev dependency; '
@@ -83,19 +75,22 @@ Future<void> run(HookContext context) async {
     final harnessProgress = context.logger.progress(
       'Scaffolding AI Agent Harness',
     );
-    final harnessResult = await Process.run('mason', [
-      'make',
-      'harness',
-      '--project_name',
-      context.vars['project_name'] as String,
-      '--android_package_name',
-      androidPackageName,
-      '--ios_bundle_id',
-      iosBundleId,
-      // Never clobber a CLAUDE.md / AGENTS.md the team already edited.
-      '--on-conflict',
-      'skip',
-    ], runInShell: true);
+    final harnessResult = await Process.run(
+        'mason',
+        [
+          'make',
+          'harness',
+          '--project_name',
+          context.vars['project_name'] as String,
+          '--android_package_name',
+          androidPackageName,
+          '--ios_bundle_id',
+          iosBundleId,
+          // Never clobber a CLAUDE.md / AGENTS.md the team already edited.
+          '--on-conflict',
+          'skip',
+        ],
+        runInShell: true);
 
     if (harnessResult.exitCode == 0) {
       harnessProgress.complete('AI Agent Harness installed.');
@@ -106,6 +101,24 @@ Future<void> run(HookContext context) async {
         'registered with mason?). Install it anytime with `mason make harness`.',
       );
     }
+  }
+
+  // Templates are rendered through mustache, and the formatter's style
+  // depends on the app's language version, so format everything generated
+  // (including harness scripts) with the user's own SDK. Runs last so the
+  // harness files are included; the harness quality gate checks it.
+  final targets = ['lib', 'test', 'scripts'].where(
+    (d) => Directory(d).existsSync(),
+  );
+  final formatResult = await Process.run(
+      'dart',
+      [
+        'format',
+        ...targets,
+      ],
+      runInShell: true);
+  if (formatResult.exitCode != 0) {
+    context.logger.warn('dart format failed: ${formatResult.stderr}');
   }
 
   context.logger.success('\n🎉 Project bootstrap complete!');
@@ -130,9 +143,9 @@ bool _applyIosBundleId(String bundleId) {
   final file = File('ios/Runner.xcodeproj/project.pbxproj');
   if (!file.existsSync()) return false;
   final updated = file.readAsStringSync().replaceAllMapped(
-    RegExp(r'PRODUCT_BUNDLE_IDENTIFIER = [^;]*?(\.RunnerTests)?;'),
-    (m) => 'PRODUCT_BUNDLE_IDENTIFIER = $bundleId${m.group(1) ?? ''};',
-  );
+        RegExp(r'PRODUCT_BUNDLE_IDENTIFIER = [^;]*?(\.RunnerTests)?;'),
+        (m) => 'PRODUCT_BUNDLE_IDENTIFIER = $bundleId${m.group(1) ?? ''};',
+      );
   file.writeAsStringSync(updated);
   return true;
 }

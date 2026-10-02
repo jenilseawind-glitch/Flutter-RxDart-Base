@@ -14,6 +14,12 @@ that changes generated output or hook behavior:
 
 Cosmetic-only changes (formatting, comments) don't require a bump.
 
+**SDK floors** (`environment: sdk:` / `flutter:` in hook, template and package pubspecs) are the
+*lowest* versions the code and its dependencies need, checked against each dependency's own
+constraint on pub.dev. Never set them to the toolchain you happened to test on: a floor that is
+too high breaks `mason upgrade` for everyone one Flutter release behind. CI runs the smoke test on
+the minimum supported Flutter to catch this.
+
 ## 2. README is documentation, not a changelog — but it must not go stale
 
 Every README (`README.md`, `bricks/*/README.md`, `packages/*/README.md`) documents *current*

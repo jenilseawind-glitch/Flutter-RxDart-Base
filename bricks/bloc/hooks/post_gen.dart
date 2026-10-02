@@ -10,14 +10,17 @@ Future<void> run(HookContext context) async {
   // Format everything generated so `verify` passes on a fresh feature.
   final targets = [libDir, testDir].where((d) => Directory(d).existsSync());
   if (targets.isNotEmpty) {
-    final result =
-        await Process.run('dart', [
-          'format',
-          ...targets,
-        ], runInShell: true).timeout(
-          const Duration(seconds: 30),
-          onTimeout: () => ProcessResult(0, 1, '', 'timed out'),
-        );
+    final result = await Process.run(
+            'dart',
+            [
+              'format',
+              ...targets,
+            ],
+            runInShell: true)
+        .timeout(
+      const Duration(seconds: 30),
+      onTimeout: () => ProcessResult(0, 1, '', 'timed out'),
+    );
     if (result.exitCode != 0) {
       context.logger.warn(
         'dart format did not complete (${result.stderr}). '

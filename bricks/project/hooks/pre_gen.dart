@@ -18,8 +18,8 @@ void run(HookContext context) {
     errors.add('project_name "$projectName" must be snake_case (e.g. my_app).');
   }
 
-  final androidPackage = (context.vars['android_package_name'] as String? ?? '')
-      .trim();
+  final androidPackage =
+      (context.vars['android_package_name'] as String? ?? '').trim();
   if (!_androidPackage.hasMatch(androidPackage)) {
     errors.add(
       'android_package_name "$androidPackage" must be reverse-domain notation '
