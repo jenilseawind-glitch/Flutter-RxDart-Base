@@ -38,7 +38,7 @@ dependencies:
   dio: ^5.11.1
   dio_smart_retry: ^7.0.1
   dio_http2_adapter: ^2.9.0
-  connectivity_plus: ^7.3.1
+  connectivity_plus: ^7.3.2
 
   # State management
   redux: ^5.0.0
@@ -58,9 +58,9 @@ dependencies:
   intl: ^0.20.2
 
   # Misc
-  url_launcher: ^6.3.2
+  url_launcher: ^6.3.3
   snug_logger: ^1.0.15
-  characters: ^1.4.0
+  characters: ^1.4.1
   flutter_dotenv: ^6.0.1
 
 dev_dependencies:
