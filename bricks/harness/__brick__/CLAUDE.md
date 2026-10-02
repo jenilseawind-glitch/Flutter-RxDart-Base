@@ -1,48 +1,15 @@
-# {{project_name}} — Project Memory
+# {{project_name}} — Claude Code memory
 
-This file loads automatically every session — keep it short and token-efficient.
-Full golden rules contract lives in `AGENTS.md`. Deep reference docs live in
-`.agents/skills/flutter-senior-dev/references/` and load only when needed.
+@AGENTS.md
 
-## Stack
-Flutter · Redux (global session state) · RxDart (per-screen ephemeral state) · Dio (networking).
-Android package: `{{android_package_name}}`. iOS bundle id: `{{ios_bundle_id}}`.
+## Claude Code specifics
+- Android package `{{android_package_name}}`, iOS bundle id `{{ios_bundle_id}}`.
+- Skill `flutter-senior-dev` (`.claude/skills/`) covers planning, scaffolding and review on this stack — use it for any feature or architecture work.
+- Subagent `flutter-qa` (`.claude/agents/flutter-qa.md`) does a one-shot architecture review of a finished feature. Invoke it only when a review is asked for.
+- The `dart` MCP server is pre-approved: use `mcp__dart__*` tools for analysis, symbol lookup, pub.dev search and the running app (hot reload, runtime errors, widget tree).
+- A `PostToolUse` hook formats and analyzes each Dart file you edit; exit code 2 means fix the reported issues now.
 
-## The State Rule: Where Does Data Live?
-**"Does this data need to survive navigation or a cold app restart?"**
-- **YES → `AppStore` (Redux)** — auth token, user profile, locale. Nothing else.
-- **NO → Feature BLoC (RxDart)** — API fetch state, form fields, UI toggles. Screen-local only.
-*Rule of thumb*: When unsure, ask — never leak screen state into Redux "just in case."
-
-## Folder Map
-```
-lib/
-├── networking/        # DioClient + 5 interceptors + sealed ApiException & ApiResponse
-├── redux/             # AppStore / AppState / AppAction — session persistence ONLY
-├── resources/         # ResColors, AppTypography — design tokens, no raw literals
-├── utils/widgets/     # AppScaffold, AppLoadingState, AppErrorState, AppEmptyState, AppCard
-└── features/<name>/   # mason make bloc — bloc/ repo/ model/ widgets/ + page
-```
-
-## Adding a Feature (Daily Workflow)
-1. `dart run scripts/agent/wire_route.dart <feature_name>` — scaffolds bloc if missing & wires route.
-2. Implement repo → bloc → model → widgets/page following the golden rules.
-3. Run `scripts/agent/verify.ps1` (Win) or `./scripts/agent/verify.sh` (Mac/Linux) before commit.
-4. Upgrade harness safely without data loss: `dart run scripts/agent/upgrade.dart`.
-
-## Hard Rules (Enforced by Analyzer & Architecture)
-- **Repository is transport ONLY**: call `ApiBaseHelper`, return raw `Map<String, dynamic>`. **Never** call `Model.fromJson` in repository. *(Enforced by custom_lint)*
-- **BLoC owns business logic**: await repo, parse with `Model.fromJson`, emit `ApiResponse<T>`.
-- **Zero `setState` in widgets**: use stream builders (`AppResponseBuilder` / `StreamBuilder`). *(Enforced by custom_lint)*
-- **Zero RxDart outside BLoC**: widgets consume plain `Stream<T>` / `ApiResponse<T>` only. *(Enforced by custom_lint)*
-- **Sealed `ApiResponse<T>`**: `InitialResponse`, `LoadingResponse`, `SuccessResponse(data)`, `ErrorResponse(error, {retry})`. Match exhaustively.
-- **Error mapping**: errors reach UI only via `exception.userFacingMessage` / `AppErrorState`.
-- **Token lifecycle**: mixin `CancelTokenOwner`, call `createNewToken()` before fetches, cancel in `dispose()`. Guard stream emissions with `if (!subject.isClosed)`.
-- **Design tokens only**: sizing via ScreenUtil (`.w`, `.h`, `.r`, `.sp`), colors via `ResColors.withValues(alpha:)`, typography via `context.textTheme`.
-
-## QA & Review Defaults
-- Routine feature work is a single-session, single-agent job.
-- For a focused architecture audit of a finished feature, invoke the `flutter-qa` agent (`.agents/agents/flutter-qa.md`).
+<!-- harness:project-rules — Everything below this line is yours. `upgrade.dart` keeps it verbatim. -->
 
 ---
 @.harness/active-context.md

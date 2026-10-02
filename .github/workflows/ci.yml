@@ -106,5 +106,11 @@ jobs:
       - name: Analyze
         run: dart analyze --fatal-infos tool bricks/project/hooks bricks/bloc/hooks
 
-      - name: Harness upgrade simulation
-        run: dart run tool/test_harness_upgrade.dart
+      - name: Harness docs reference only real code
+        run: dart run tool/harness_check.dart
+
+      - name: Harness upgrade end-to-end
+        run: |
+          dart pub global activate mason_cli
+          mason get
+          dart run tool/test_harness_upgrade.dart

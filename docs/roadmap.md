@@ -6,7 +6,7 @@ Paths below are relative to `bricks/project/__brick__/` unless stated otherwise.
 
 ## 1. Summary
 
-The core design is sound: sealed `ApiException` / `ApiResponse`, per-screen BLoC with `CancelTokenOwner`, disciplined brick versioning, and an honest `base-gaps.md`. All historical gaps around false claims, missing CI, or unverified brick outputs have been resolved with automated end-to-end smoke testing (`tool/smoke.dart`), link validation (`tool/docs_check.dart`), GitHub Actions CI matrix (`ci.yml`, `version-gate.yml`), and a streamlined AI Agent Harness v1.4.2.
+The core design is sound: sealed `ApiException` / `ApiResponse`, per-screen BLoC with `CancelTokenOwner`, disciplined brick versioning, and an honest `base-gaps.md`. All historical gaps around false claims, missing CI, or unverified brick outputs have been resolved with automated end-to-end smoke testing (`tool/smoke.dart`), link validation (`tool/docs_check.dart`), GitHub Actions CI matrix (`ci.yml`, `version-gate.yml`), and the AI Agent Harness (v1.6.0: Claude Code-native wiring, Dart MCP server, edit hook, tested upgrades).
 
 ## 2. Findings Resolution
 
@@ -59,7 +59,7 @@ The core design is sound: sealed `ApiException` / `ApiResponse`, per-screen BLoC
   - Button text overflow resilience.
 
 - [x] **Phase 5: Harness Diet**
-  - Harness 1.4.2 pure template brick with zero hooks.
+  - Harness is a pure template brick with zero hooks (since 1.4.x).
   - `CLAUDE.md` condensed to ~48 lines (~500 tokens).
   - Cross-session memory handled via `@.harness/active-context.md`.
 

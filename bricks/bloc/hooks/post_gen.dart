@@ -34,6 +34,6 @@ Future<void> run(HookContext context) async {
     '     (or add it by hand to lib/utils/router/routes.dart and '
     'app_router.dart: Routes.${feature.camelCase} → ${feature.pascalCase}Page)\n'
     '  2. Point ${feature.pascalCase}Repo at the real endpoint.\n'
-    '  3. Run the quality gate: ./scripts/agent/verify.sh\n',
+    '  3. Run the quality gate: dart run scripts/agent/verify.dart\n',
   );
 }

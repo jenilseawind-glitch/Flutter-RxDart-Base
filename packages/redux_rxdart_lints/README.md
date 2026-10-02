@@ -13,7 +13,7 @@ on where the project is checked out.
 |---|---|---|
 | `no_rxdart_in_ui` | #4 Zero RxDart Outside BLoC | `import`/`export` of `package:rxdart/...` anywhere except `bloc/` folders, `*_bloc.dart`, `redux/`, `networking/`, `services/` and non-widget `utils/` (`utils/widgets/` is UI and is checked) |
 | `no_setstate_in_widget` | #3 Zero setState | calls that resolve to Flutter's `State.setState`. Design-system primitives in `lib/utils/widgets/ui/` are exempt (purely visual state) |
-| `no_screenutil_in_private_widget` | Adaptive layout (ScreenUtil) | `flutter_screenutil` extensions (`.w .h .r .sp ...`, resolved to the package — your own `.w` extension is ignored) inside a private (`_Foo`) widget of any kind, or the `State` of one. ScreenUtil 5.9.x does not rebuild private widgets on resize |
+| `no_screenutil_in_private_widget` | #13 ScreenUtil only in public widgets | `flutter_screenutil` extensions (`.w .h .r .sp ...`, resolved to the package — your own `.w` extension is ignored) inside a private (`_Foo`) widget of any kind, or the `State` of one. ScreenUtil 5.9.x does not rebuild private widgets on resize |
 | `repo_transport_only` | #1 Repository is Transport ONLY | `fromJson` / `fromMap` calls **and tear-offs** (`.map(Model.fromJson)`) in a repository: files under `repo/` or `repository/`, or named `*_repo.dart` / `*_repository.dart` |
 
 ## Testing
