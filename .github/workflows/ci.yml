@@ -10,6 +10,7 @@ jobs:
   smoke-test:
     name: Brick Generation Smoke Test
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -18,6 +19,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          flutter-version: '3.47.5'
 
       - name: Install tool dependencies
         working-directory: tool
@@ -25,6 +27,21 @@ jobs:
 
       - name: Run Smoke Test
         run: dart run tool/smoke.dart
+
+  docs-check:
+    name: Docs Link Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+
+      - name: Install tool dependencies
+        working-directory: tool
+        run: dart pub get
 
       - name: Run Docs Check
         run: dart run tool/docs_check.dart
