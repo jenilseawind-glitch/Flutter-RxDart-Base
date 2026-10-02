@@ -10,7 +10,8 @@ relying on an AI agent (or human) remembering them.
 |---|---|---|
 | `no_rxdart_in_ui` | #4 Zero RxDart Outside BLoC | `import 'package:rxdart/...'` outside `bloc/`, `_bloc.dart`, `utils/`, `redux/` |
 | `no_setstate_in_widget` | #3 Zero setState | any `setState(...)` call |
-| `repo_transport_only` | #1 Repository is Transport ONLY | `.fromJson(...)` call inside a `repo/` file |
+| `no_screenutil_in_private_widget` | Adaptive layout | `.w .h .r .sp ...` (flutter_screenutil) inside a private (`_Foo`) widget or its State: ScreenUtil 5.9.3 does not rebuild private widgets on resize |
+| `repo_transport_only` | #1 Repository is Transport ONLY | `.fromJson(...)` call or `Model.fromJson(...)` constructor inside a `repo/` file |
 
 ## Usage
 
