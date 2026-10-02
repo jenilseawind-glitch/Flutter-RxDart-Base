@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:mason/mason.dart';
 
 Future<void> run(HookContext context) async {
@@ -11,7 +12,8 @@ Future<void> run(HookContext context) async {
   }
 
   context.logger.success(
-      '🎉 Feature module `$featureName` scaffolded successfully in `$targetDir`!');
+    '🎉 Feature module `$featureName` scaffolded successfully in `$targetDir`!',
+  );
   context.logger.info(
     '\nNext steps to wire this feature:\n'
     '1. Register route in `lib/utils/router/routes.dart`:\n'

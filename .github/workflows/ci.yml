@@ -49,12 +49,16 @@ jobs:
   packages-lint-test:
     name: Packages Test (redux_rxdart_lints)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Dart
-        uses: dart-lang/setup-dart@v1
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.47.6'
 
       - name: Install dependencies
         working-directory: packages/redux_rxdart_lints
@@ -62,8 +66,45 @@ jobs:
 
       - name: Format
         working-directory: packages/redux_rxdart_lints
-        run: dart format --set-exit-if-changed .
+        run: dart format --set-exit-if-changed lib
 
       - name: Analyze
         working-directory: packages/redux_rxdart_lints
         run: dart analyze --fatal-infos
+
+      # Fixture project: every rule has expect_lint positives and clean
+      # negatives. Fails on a missing or an unexpected lint.
+      - name: Rule fixtures
+        working-directory: packages/redux_rxdart_lints/example
+        run: |
+          flutter pub get
+          dart run custom_lint
+
+  workspace-checks:
+    name: Workspace format & analyze (tool, hooks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.47.6'
+
+      - name: Resolve dependencies
+        run: |
+          for d in tool bricks/project/hooks bricks/bloc/hooks; do
+            (cd "$d" && dart pub get)
+          done
+
+      - name: Format
+        run: dart format --set-exit-if-changed tool bricks/project/hooks bricks/bloc/hooks
+
+      - name: Analyze
+        run: dart analyze --fatal-infos tool bricks/project/hooks bricks/bloc/hooks
+
+      - name: Harness upgrade simulation
+        run: dart run tool/test_harness_upgrade.dart

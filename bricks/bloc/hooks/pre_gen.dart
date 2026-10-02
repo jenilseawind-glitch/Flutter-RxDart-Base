@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:mason/mason.dart';
 
 Future<void> run(HookContext context) async {
@@ -10,16 +11,19 @@ Future<void> run(HookContext context) async {
     if (pubspecFile.existsSync()) {
       try {
         final content = pubspecFile.readAsStringSync();
-        final match = RegExp(r'^name:\s*([a-zA-Z0-9_]+)', multiLine: true)
-            .firstMatch(content);
+        final match = RegExp(
+          r'^name:\s*([a-zA-Z0-9_]+)',
+          multiLine: true,
+        ).firstMatch(content);
         if (match != null) {
           final detected = match.group(1)!;
           context.vars['project_name'] = detected;
           context.logger.info('Auto-detected project_name: $detected');
         }
       } catch (e) {
-        context.logger
-            .warn('Could not read project name from pubspec.yaml: $e');
+        context.logger.warn(
+          'Could not read project name from pubspec.yaml: $e',
+        );
       }
     } else {
       context.logger.err(
