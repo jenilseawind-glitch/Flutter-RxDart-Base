@@ -266,9 +266,8 @@ String _detectPageClassName(String featureSnake, String fallbackPascal) {
   if (pageFile.existsSync()) {
     try {
       final content = pageFile.readAsStringSync();
-      final match = RegExp(
-        r'class\s+([A-Za-z0-9_]+Page)\s+extends\s+State',
-      ).firstMatch(content);
+      final match = RegExp(r'class\s+([A-Za-z0-9_]+Page)\s+extends\s+State')
+          .firstMatch(content);
       if (match != null) return match.group(1)!;
     } catch (_) {}
   }
@@ -360,9 +359,8 @@ void _injectRouteCase({
     injected = true;
   } else {
     // If no default: found, find the closing brace of switch (settings.name)
-    final switchMatch = RegExp(
-      r'switch\s*\([^\)]*settings\.name[^\)]*\)\s*\{',
-    ).firstMatch(content);
+    final switchMatch = RegExp(r'switch\s*\([^\)]*settings\.name[^\)]*\)\s*\{')
+        .firstMatch(content);
     if (switchMatch != null) {
       final switchStart = switchMatch.end;
       final switchClose = content.indexOf('}', switchStart);

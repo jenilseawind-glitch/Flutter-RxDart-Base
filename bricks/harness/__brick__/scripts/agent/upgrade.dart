@@ -44,7 +44,7 @@ void main(List<String> args) async {
 
   // 2. Check upstream latest tag / version
   print('\n🔍 Checking for upstream harness updates...');
-  String targetVersion = '1.5.0';
+  String targetVersion = '1.5.2';
 
   try {
     final lsRemote = await Process.run('git', [
@@ -179,9 +179,8 @@ void main(List<String> args) async {
   // (We strictly DO NOT overwrite active-context.md or progress.md)
   if (!activeContextFile.existsSync() &&
       File('${stagingDir.path}/.harness/active-context.md').existsSync()) {
-    File(
-      '${stagingDir.path}/.harness/active-context.md',
-    ).copySync(activeContextFile.path);
+    File('${stagingDir.path}/.harness/active-context.md')
+        .copySync(activeContextFile.path);
   }
   if (!progressFile.existsSync() &&
       File('${stagingDir.path}/.harness/progress.md').existsSync()) {

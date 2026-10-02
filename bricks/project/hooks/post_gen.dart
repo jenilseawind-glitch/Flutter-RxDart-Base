@@ -4,8 +4,10 @@ import 'package:mason/mason.dart';
 
 Future<void> run(HookContext context) async {
   final androidPackageName = context.vars['android_package_name'] as String;
-  final rawIosBundleId = (context.vars['ios_bundle_id'] as String?)?.trim() ?? '';
-  final iosBundleId = rawIosBundleId.isEmpty ? androidPackageName : rawIosBundleId;
+  final rawIosBundleId =
+      (context.vars['ios_bundle_id'] as String?)?.trim() ?? '';
+  final iosBundleId =
+      rawIosBundleId.isEmpty ? androidPackageName : rawIosBundleId;
 
   final progress = context.logger.progress('Resolving dependencies');
 
@@ -53,7 +55,8 @@ Future<void> run(HookContext context) async {
 
   if (renameResult.exitCode != 0) {
     progress.fail();
-    context.logger.err('change_app_package_name failed:\n${renameResult.stderr}');
+    context.logger
+        .err('change_app_package_name failed:\n${renameResult.stderr}');
     exit(1);
   }
 
@@ -64,7 +67,8 @@ Future<void> run(HookContext context) async {
     runInShell: true,
   );
 
-  progress.complete('Dependencies configured, localizations generated & package renamed!');
+  progress.complete(
+      'Dependencies configured, localizations generated & package renamed!');
 
   if (iosBundleId != androidPackageName) {
     context.logger.info(

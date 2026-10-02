@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+- Raised hook SDK floor to Dart `>=3.13.0`; validated against Flutter 3.47.6 / Dart 3.13.5.
+
 ## 1.1.0
 
 - Fixed BLoC template import: directly imports `api_response.dart` instead of the UI widget `app_response_builder.dart`.

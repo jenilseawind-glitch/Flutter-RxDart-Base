@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.2
+
+- Aligned `.harness/version.json` and the `upgrade.dart` fallback version with the brick version.
+- Validated against Flutter 3.47.6 / Dart 3.13.5.
+
 ## 1.5.1
 
 - **Context bloat reduction**: Tightened `active-context.md` template with enforced line-length caps (Current Focus: 2-3 lines, Recent Tasks: 1-2 lines each, Key Decisions: 1-2 lines each), overflow-to-`progress.md` instructions, Known Issues cleanup rules (delete resolved items), `⏸ deferred by decision` line type, and `commit:pending` anti-staleness guidance.

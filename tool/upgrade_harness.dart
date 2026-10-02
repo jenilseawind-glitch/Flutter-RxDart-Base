@@ -41,7 +41,7 @@ void main(List<String> args) async {
       currentVersion = jsonMap['version']?.toString() ?? currentVersion;
     } catch (_) {}
   }
-  const targetVersion = '1.5.0';
+  const targetVersion = '1.5.2';
   print('📌 Current Version: $currentVersion');
   print('🚀 Upgrading to Version: $targetVersion');
 

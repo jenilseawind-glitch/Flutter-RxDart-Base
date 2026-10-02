@@ -73,8 +73,8 @@ Future<void> main() async {
     templatePubspec.writeAsStringSync(
         _useLocalLints(backupPubspecContent, 'the project brick pubspec'));
 
-    await _run('Creating fresh Flutter app', 'flutter',
-        ['create', 'temp_smoke_test']);
+    await _run(
+        'Creating fresh Flutter app', 'flutter', ['create', 'temp_smoke_test']);
 
     await _run('Running mason make project', 'mason', [
       'make',
@@ -121,8 +121,8 @@ Future<void> main() async {
 
     await _run('Running dart format', 'dart', ['format', '.'],
         workingDirectory: tempDir.path);
-    await _run('Running flutter analyze', 'flutter',
-        ['analyze', '--fatal-infos'],
+    await _run(
+        'Running flutter analyze', 'flutter', ['analyze', '--fatal-infos'],
         workingDirectory: tempDir.path);
     await _run('Running flutter test', 'flutter', ['test'],
         workingDirectory: tempDir.path);

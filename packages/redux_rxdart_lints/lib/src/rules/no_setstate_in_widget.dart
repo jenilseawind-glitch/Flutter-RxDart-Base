@@ -10,7 +10,8 @@ class NoSetStateInWidget extends DartLintRule {
 
   static const _code = LintCode(
     name: 'no_setstate_in_widget',
-    problemMessage: 'setState is forbidden. Drive UI from BLoC streams via '
+    problemMessage:
+        'setState is forbidden. Drive UI from BLoC streams via '
         'ApiResponseBuilder / StreamBuilder (AGENTS.md Golden Rule #3).',
     errorSeverity: DiagnosticSeverity.ERROR,
   );

@@ -7,11 +7,11 @@ This repository is the Mason Workspace source repository providing templates, br
 ```
 .
 ├── bricks/
-│   ├── project/                  # Scaffolds initial Flutter app architecture (v1.3.1)
-│   ├── bloc/                     # Scaffolds feature modules with BLoC and tests (v1.1.0)
-│   └── harness/                  # Scaffolds AI Agent Harness onto apps (v1.4.2)
+│   ├── project/                  # Scaffolds initial Flutter app architecture (v1.4.0)
+│   ├── bloc/                     # Scaffolds feature modules with BLoC and tests (v1.1.1)
+│   └── harness/                  # Scaffolds AI Agent Harness onto apps (v1.5.2)
 ├── packages/
-│   └── redux_rxdart_lints/       # Custom lint package enforcing golden rules (v1.0.0)
+│   └── redux_rxdart_lints/       # Custom lint package enforcing golden rules (v0.1.0)
 ├── tool/
 │   ├── smoke.dart                # E2E test: create -> project -> bloc -> format -> analyze -> test -> lint
 │   └── docs_check.dart           # Validates all markdown links and documentation cross-references

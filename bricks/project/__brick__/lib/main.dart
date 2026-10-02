@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
           return ScreenUtilInit(
             designSize: const Size(375, 812),
             minTextAdapt: true,
-            builder: (_, __) => ToastificationWrapper(
+            builder: (_, _) => ToastificationWrapper(
               child: MaterialApp(
                 debugShowCheckedModeBanner: false,
                 navigatorKey: AppRouter.navigatorKey,

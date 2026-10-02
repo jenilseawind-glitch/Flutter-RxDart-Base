@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.4.0
+
+- Verified on Flutter 3.47.6 / Dart 3.13.5: `flutter analyze --fatal-infos`, `flutter test` and `custom_lint` all pass on a freshly generated app.
+- Raised the SDK floor to Dart `>=3.13.0` and Flutter `>=3.47.0`; hook SDK floor raised to match.
+- Renamed the private `_CustomToast` to `CustomToast` so the scaffolded app passes `no_screenutil_in_private_widget`.
 
 - `redux_rxdart_lints` migrated to `analyzer ^8` / `custom_lint_builder ^0.8.1` (`DiagnosticSeverity`, `DiagnosticReporter`). `custom_lint 0.8.0` (analyzer 7) crashes on Flutter 3.47.x / Dart 3.13 with `Missing implementation of visitDotShorthandPropertyAccess`. Scaffolded `pubspec.yaml` now requires `custom_lint: ^0.8.1`. Not verified on Flutter 3.44 / Dart 3.12.
 

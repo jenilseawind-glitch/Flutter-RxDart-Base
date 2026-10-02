@@ -78,8 +78,9 @@ class _Finder extends RecursiveAstVisitor<void> {
 
   @override
   void visitPropertyAccess(PropertyAccess node) {
-    if (NoScreenutilInPrivateWidget._extensions
-            .contains(node.propertyName.name) &&
+    if (NoScreenutilInPrivateWidget._extensions.contains(
+          node.propertyName.name,
+        ) &&
         _isNum(node.target)) {
       reporter.atNode(node, code);
     }
@@ -88,8 +89,9 @@ class _Finder extends RecursiveAstVisitor<void> {
 
   @override
   void visitPrefixedIdentifier(PrefixedIdentifier node) {
-    if (NoScreenutilInPrivateWidget._extensions
-            .contains(node.identifier.name) &&
+    if (NoScreenutilInPrivateWidget._extensions.contains(
+          node.identifier.name,
+        ) &&
         _isNum(node.prefix)) {
       reporter.atNode(node, code);
     }
