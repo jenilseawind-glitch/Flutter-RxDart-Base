@@ -1,6 +1,6 @@
 # Improvement Roadmap
 
-Status: **Phases 0 through 6 Executed & Verified.** Major future horizons (Phases 7 through 11) tracked below for v2.0 evolution as of 2026-09-24.
+Status (2026-10-03): **Phases 0–6 done; Phase 7 mostly done** (open: `PATCH`, Windows path hardening). Phases 8–11 are tracked below. AI-harness work has its own roadmap in [AI Harness R&D](ai-harness-rnd.md).
 
 Paths below are relative to `bricks/project/__brick__/` unless stated otherwise.
 
@@ -72,29 +72,29 @@ The core design is sound: sealed `ApiException` / `ApiResponse`, per-screen BLoC
 
 ## 4. Pending Horizons & Major Evolution Roadmap (v2.0)
 
-The following major milestones track architectural enhancements, enterprise capabilities, and ecosystem expansions identified from real-world usage and [base-gaps.md](../bricks/harness/__brick__/.agents/skills/flutter-senior-dev/base-gaps.md).
+The following major milestones track architectural enhancements, enterprise capabilities, and ecosystem expansions identified from real-world usage and [base-gaps.md](https://github.com/jenilseawind-glitch/Flutter-RxDart-Base/blob/main/bricks/harness/__brick__/.agents/skills/flutter-senior-dev/base-gaps.md).
 
 ### ⏳ Phase 7: Core Scaffolding Hardening & Template Alignment
 *Objective: Eliminate template runtime bugs, decouple generated presentation layers, and resolve networking omissions.*
 
-- [ ] **BLoC Request Cancellation Guard**:
+- [x] **BLoC Request Cancellation Guard** *(done in bloc 1.2.0)*:
   - Update `{{feature_name}}_bloc.dart` template to explicitly check `e is! RequestCancelledException` in the `ApiException` catch block. Prevent aborted requests from surfacing as UI errors.
   - Wire `retry: fetchData` callback directly into `ApiResponse.error(e, retry: fetchData)` so retry action handlers work automatically.
-- [ ] **Decoupled Feature Page & Content Widget**:
+- [x] **Decoupled Feature Page & Content Widget** *(done in bloc 1.2.0)*:
   - Update `{{feature_name}}_page.dart` to trigger `_bloc.fetchData()` in `initState()`.
   - Wire `AppResponseBuilder<{{feature_name.pascalCase()}}Model>` into the page body.
   - Refactor `{{feature_name}}_content_widget.dart` to receive pure domain model data (`{{feature_name.pascalCase()}}Model`) instead of holding a direct reference to the BLoC.
 - [ ] **Network Method Completeness (`PATCH`)**:
   - Implement HTTP `patch()` in `ApiBaseHelper` for partial resource updates.
-- [ ] **Server Error Message Extraction**:
+- [x] **Server Error Message Extraction** *(done in project 1.4.0)*:
   - Enhance `ErrorMappingInterceptor` to extract backend error messages from `err.response?.data` (e.g. `data['message']` or `data['errors']`) for 400, 401, 404, 409, and 500 status codes rather than falling back to generic Dio messages.
-- [ ] **De-duplicate AppScaffold**:
+- [x] **De-duplicate AppScaffold** *(done: only `lib/utils/widgets/ui/app_scaffold.dart` remains)*:
   - Remove redundant `lib/utils/widgets/app_scaffold.dart`, consolidating to `lib/utils/widgets/ui/app_scaffold.dart`.
 - [ ] **Windows Path Length & Mason Cache Hardening**:
   - Windows default Git cache paths (`%LOCALAPPDATA%\Mason\Cache\git\<repo>_<base64>_<hash>\`) consume ~191 characters, leaving only 67 characters before hitting the Win32 `MAX_PATH` (260-char) limit.
   - Document required Windows developer setup: configure `MASON_CACHE` to a short root (e.g. `C:\.mason`).
   - Evaluate future path compaction for deep brick templates (such as flattening `widgets/view/.../bloc` or colocating widget helper BLoCs) without compromising Rule 3 (zero `setState`).
-- [ ] **Comprehensive Unit Test Templates**:
+- [x] **Comprehensive Unit Test Templates** *(done in bloc 1.2.0: 7 tests per feature)*:
   - Expand `{{feature_name}}_bloc_test.dart` to assert stream emission sequences (`loading` -> `completed`, and error state handling with mocks).
 
 ---
@@ -102,7 +102,7 @@ The following major milestones track architectural enhancements, enterprise capa
 ### ⏳ Phase 8: Enterprise Session, Security & Resilient Networking
 *Objective: Upgrade auth session management to enterprise grade, support streaming/AI workloads, and fix payload injection.*
 
-- [ ] **401 Token Refresh & Auto-Logout Flow**:
+- [ ] **401 Token Refresh & Auto-Logout Flow** *(auto-logout on a 401 shipped in project 1.4.0; refresh is open)*:
   - Implement single-flight token refresh mutex in `AuthInterceptor`.
   - Queue concurrent requests during active refresh and replay upon token renewal.
   - Automatically dispatch `LogoutAction` and trigger route transition on unrecoverable 401/403 session expiration.

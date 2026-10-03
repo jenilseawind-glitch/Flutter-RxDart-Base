@@ -98,19 +98,22 @@ don't guess.
 ### Temporary exception: fork URLs until upstream merges
 
 Development currently happens in the fork `jenilseawind-glitch/Flutter-RxDart-Base`, which is
-ahead of upstream (project 1.4.0, bloc 1.2.0, harness 1.6.0, `redux_rxdart_lints` 0.2.0 on
-analyzer 8). Upstream `main` still ships `redux_rxdart_lints` 0.1.0 on analyzer 7 /
+ahead of upstream (fork: project 1.4.1, bloc 1.2.1, harness 1.7.1, `redux_rxdart_lints` 0.2.1 on
+analyzer 8; upstream: project 1.1.0, bloc 1.0.0, harness 1.4.1). Upstream `main` still ships `redux_rxdart_lints` 0.1.0 on analyzer 7 /
 `custom_lint_builder ^0.7`, which conflicts with the template's `custom_lint ^0.8.1` and crashes
 on Flutter 3.47. Pointing generated apps at upstream today would break `flutter pub get` in
 every new project, so these **functional** URLs intentionally name the fork:
 
 | File | What depends on it |
 |---|---|
+| `README.md`, `docs/index.md` | Quick Start `mason add -g` commands (upstream's bricks are years behind) |
 | `bricks/project/__brick__/pubspec.yaml` | `redux_rxdart_lints` git dependency of every generated app |
 | `bricks/harness/__brick__/.harness/version.json` | `upstream_repo` used by `upgrade.dart` |
 | `bricks/harness/__brick__/scripts/agent/upgrade.dart` | fallback `upstream` URL (`--check-only`, `mason add` hint) |
 | `packages/redux_rxdart_lints/README.md`, `docs/packages/redux_rxdart_lints.md` | install snippet |
 | `docs/bricks/bloc.md`, `docs/bricks/harness.md` | CHANGELOG links |
+| `bricks/harness/README.md`, `docs/bricks/harness.md` | `curl` of the current `upgrade.dart` for projects on ≤ 1.7.0 |
+| `docs/index.md`, `docs/roadmap.md` | LICENSE and `base-gaps.md` links (pages outside `docs/`) |
 
 **After this work is merged into `TheJenilDGohel/Flutter-RxDart-Base` (maintainer or AI agent):**
 
