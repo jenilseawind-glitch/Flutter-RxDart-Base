@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.7.0
+
+Task skills and a self-learning loop: agents get a procedure for each kind of work on this architecture, and every session's mistakes become lessons that the next session loads.
+
+- **Seven task skills** (Agent Skills format, in `.agents/skills/` with `.claude/skills/` entry points): `add-feature` (spec-first, from contract to green gate), `add-endpoint` (contract → `ApiConstants` → transport-only repo → defensive model → BLoC → tests), `manage-state` (where state lives, plus BLoC recipes for submit, live search, pagination, one-off events, several loads, dependent calls, local UI state and timers that the base repo's CI compiles, lints and behavior-tests in a generated app; Redux session changes step by step), `build-ui`, `write-tests`, `fix-bug` (symptom → layer table and a fix for every gate step and lint rule) and `evolve-harness`. `flutter-senior-dev` stays the planning and review skill and routes hands-on work to them.
+- **Learning loop.** `scripts/agent/learn.dart` keeps `.harness/lessons.md`: `list` (each skill's step 0), `add` (with a duplicate guard), `hit`, `promote` (to a skill overlay `.harness/skills/<skill>.md`, `AGENTS.md` §7, a project skill or `upstream`), `retire`, `review` (ready to promote, reopened, duplicates, stale, orphans, cap) and `upstream` (proposals for the base repository). A promoted lesson that happens again reopens, because the rule it became did not work. Memory-poisoning guard: `add` refuses, and `check` fails on, secrets (tokens, keys, credentialed URLs, `password=`-style assignments) and injected-instruction phrasing; `check` also scans overlays, specs, `active-context.md` and `progress.md` for credentials. `evolve-harness` allows lessons only from verified work or explicit user instructions.
+- **`verify.dart`** gains a Lessons step: it fails on a malformed lessons file and prints how many lessons are ready to promote.
+- **`AGENTS.md` §4/§6**: skill index, plus the close-out step that records lessons. `CLAUDE.md` lists the skills; `learn.dart` is pre-approved in `.claude/settings.json`. `flutter-qa` ends its review with suggested lesson commands.
+- **`upgrade.dart`** replaces every skill the brick ships (listed in `.harness/version.json` → `managed_skills`), removes shipped skills that are no longer shipped, and never touches skills the project created, `.harness/lessons.md` or overlays. It lists template permissions missing from an existing `.claude/settings.json` instead of silently skipping them.
+- `references/redux-vs-rxdart.md`: a new `AppState` field (an onboarding flag, a theme) needs the owner's approval, matching `AGENTS.md` §1 and the `AppState` doc comment. Previously it read as allowed by default.
+- Upgrading from 1.6.x: run `dart run scripts/agent/upgrade.dart`. Your `.claude/settings.json` is kept, so add `"Bash(dart run scripts/agent/learn.dart:*)"` to its allow list (the upgrade prints this).
+
 ## 1.6.1
 
 - **Fix: "Harness is already up to date" on old projects.** Neither repository has git tags, so pre-1.6 `upgrade.dart` always fell back to `1.5.0` and compared it with the `1.5.0` stamp. `--check-only` now reads the version from upstream's `bricks/harness/brick.yaml` (tags are only a fallback) and says so plainly when it cannot reach upstream, instead of claiming "up to date".

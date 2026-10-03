@@ -32,4 +32,12 @@ the rulebook; quote rule numbers in findings.
 ## Output
 One line per finding: `file:line — rule — problem — one-line fix`.
 If nothing is wrong, say so in one line. No restated checklist, no padding.
+
+Then a `Lessons:` block feeding the learning loop (`evolve-harness` skill):
+one command per finding that a skill should have prevented, scoped to that
+skill, for example:
+`dart run scripts/agent/learn.dart add add-endpoint "<trigger>: <fix>"`.
+Run `learn.dart list <scope>` first and suggest `hit L<id>` for lessons that
+already exist. Suggest only; the caller decides what to run.
+
 Run once and stop: don't edit files, spawn agents or re-review unless asked.

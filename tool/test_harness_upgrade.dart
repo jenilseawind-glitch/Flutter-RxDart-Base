@@ -88,6 +88,8 @@ Always talk to the payments team before touching checkout.
 Never log card numbers.
 ''');
     write('.agents/agents/flutter-qa.md', 'legacy qa agent');
+    write('.agents/skills/team-payments/SKILL.md',
+        '---\nname: team-payments\ndescription: ours\n---\n');
 
     // ── Upgrade ─────────────────────────────────────────────────────────
     var run = await Process.run('dart', ['run', 'scripts/agent/upgrade.dart'],
@@ -147,6 +149,24 @@ Never log card numbers.
         exists('.claude/skills/flutter-senior-dev/SKILL.md') &&
             exists('.claude/settings.json') &&
             exists('.mcp.json'));
+
+    final shipped = Directory(
+      p.join(root, 'bricks/harness/__brick__/.agents/skills'),
+    ).listSync().whereType<Directory>().map((d) => p.basename(d.path)).toList()
+      ..sort();
+    check(
+        'every shipped skill installed for all agents and Claude Code',
+        shipped.length >= 8 &&
+            shipped.every((s) =>
+                exists('.agents/skills/$s/SKILL.md') &&
+                exists('.claude/skills/$s/SKILL.md')));
+    check('manifest records managed_skills',
+        (manifest['managed_skills'] as List).join(',') == shipped.join(','));
+    check('project-created skill untouched',
+        read('.agents/skills/team-payments/SKILL.md').contains('ours'));
+    check('lessons store created for old projects',
+        read('.harness/lessons.md').contains('## Active'));
+    check('learn.dart installed', exists('scripts/agent/learn.dart'));
     final backups = Directory(p.join(app.path, '.harness'))
         .listSync()
         .whereType<Directory>()
@@ -183,9 +203,39 @@ Never log card numbers.
             !checkOut.contains('up to date'));
     File(manifestPath).writeAsStringSync(realManifest);
 
+    // Project knowledge, a skill the harness stopped shipping, and an
+    // older settings.json, before re-applying.
+    const learned = '# Lessons\n\n## Active\n'
+        '- [L1] add-endpoint (2x, 2026-10-01): Dates are epoch seconds.\n'
+        '\n## Promoted\n_None yet._\n';
+    write('.harness/lessons.md', learned);
+    write('.harness/skills/add-feature.md', '# add-feature additions\n');
+    write('.agents/skills/retired-skill/SKILL.md', 'old');
+    write('.claude/skills/retired-skill/SKILL.md', 'old');
+    final stamped = jsonDecode(File(manifestPath).readAsStringSync()) as Map;
+    stamped['managed_skills'] = [
+      ...stamped['managed_skills'] as List,
+      'retired-skill'
+    ];
+    File(manifestPath).writeAsStringSync(jsonEncode(stamped));
+    write('.claude/settings.json',
+        '{"permissions": {"allow": ["Bash(flutter test:*)"]}}');
+
     run = await Process.run(
         'dart', ['run', 'scripts/agent/upgrade.dart', '--force'],
         workingDirectory: app.path, runInShell: true);
+    check('lessons kept verbatim', read('.harness/lessons.md') == learned);
+    check('skill overlay kept',
+        read('.harness/skills/add-feature.md') == '# add-feature additions\n');
+    check(
+        'a skill the harness no longer ships is removed',
+        !exists('.agents/skills/retired-skill/SKILL.md') &&
+            !exists('.claude/skills/retired-skill/SKILL.md') &&
+            exists('.agents/skills/team-payments/SKILL.md'));
+    check(
+        'missing template permissions are listed, settings kept',
+        (run.stdout as String).contains('learn.dart') &&
+            read('.claude/settings.json').contains('flutter test'));
     final forced = read('CLAUDE.md');
     check('--force keeps everything below the marker',
         forced.contains('keep me') && count(forced, '## Team Notes') == 1);

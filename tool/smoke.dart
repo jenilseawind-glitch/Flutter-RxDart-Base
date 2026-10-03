@@ -1,6 +1,8 @@
 import 'package:path/path.dart' as p;
 import 'dart:io';
 
+import 'harness_recipes.dart';
+
 /// Matches the git dependency on the lints package in a pubspec, regardless
 /// of which GitHub org the repository lives under.
 final _lintsGitDep = RegExp(
@@ -122,6 +124,14 @@ Future<void> main() async {
     await _run('Checking generated code is formatted', 'dart',
         ['format', '--set-exit-if-changed', '.'],
         workingDirectory: tempDir.path);
+
+    // The harness skills' code must keep compiling, passing the lints and
+    // behaving as documented: analyze, test and custom_lint below cover it.
+    print('Pasting the harness BLoC recipes into the app...');
+    pasteRecipes(tempDir.path, 'temp_smoke_test');
+    await _run(
+        'Generating localizations for the recipes', 'flutter', ['gen-l10n'],
+        workingDirectory: tempDir.path);
     await _run(
         'Running flutter analyze', 'flutter', ['analyze', '--fatal-infos'],
         workingDirectory: tempDir.path);
@@ -150,6 +160,10 @@ Future<void> main() async {
         throw _SmokeFailure('custom_lint failed.\n$combined');
       }
     }
+
+    await _run('Checking the harness lessons store', 'dart',
+        ['run', 'scripts/agent/learn.dart', 'check'],
+        workingDirectory: tempDir.path);
 
     print('--- Smoke test completed successfully! ---');
   } on _SmokeFailure catch (e) {

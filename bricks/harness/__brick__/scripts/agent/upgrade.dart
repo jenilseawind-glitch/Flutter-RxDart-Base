@@ -10,8 +10,11 @@ import 'dart:io';
 ///   dart run scripts/agent/upgrade.dart --force      # re-apply even if versions match
 ///
 /// Three tiers:
-/// 1. **Managed** (`scripts/agent/`, skills, the QA subagent) — replaced.
-/// 2. **Memory** (`.harness/active-context.md`, `progress.md`) — never touched.
+/// 1. **Managed** (`scripts/agent/`, the skills the brick ships, the QA
+///    subagent) — replaced. Skills the project created are left alone;
+///    shipped skills the brick no longer ships are removed.
+/// 2. **Memory** (`.harness/`: active context, progress, lessons, skill
+///    overlays, specs) — never touched; missing files are created.
 /// 3. **Contracts** (`AGENTS.md`, `CLAUDE.md`) — the template part above the
 ///    `harness:project-rules` marker is replaced; everything below it is kept
 ///    verbatim. Config files you may have edited (`.claude/settings.json`,
@@ -118,11 +121,29 @@ Future<void> main(List<String> args) async {
     final backup = _backup();
     print('Backup: ${backup.path}');
 
-    // Tier 1 — managed files.
+    // Tier 1 — managed files. Skills: exactly the ones the brick ships;
+    // skills the project created itself are never touched.
+    final shipped = _skillNames('${staging.path}/.agents/skills');
+    final previouslyManaged =
+        (manifest['managed_skills'] as List?)?.map((e) => e.toString()) ??
+        const ['flutter-senior-dev'];
+    for (final retired in previouslyManaged.where(
+      (s) => !shipped.contains(s),
+    )) {
+      for (final root in ['.agents/skills', '.claude/skills']) {
+        final dir = Directory('$root/$retired');
+        if (dir.existsSync()) {
+          dir.deleteSync(recursive: true);
+          print('Removed $root/$retired (no longer shipped by the harness).');
+        }
+      }
+    }
     for (final dir in [
       'scripts/agent',
-      '.agents/skills/flutter-senior-dev',
-      '.claude/skills/flutter-senior-dev',
+      for (final skill in shipped) ...[
+        '.agents/skills/$skill',
+        '.claude/skills/$skill',
+      ],
     ]) {
       _replaceDir(Directory('${staging.path}/$dir'), Directory(dir));
     }
@@ -135,7 +156,11 @@ Future<void> main(List<String> args) async {
     if (legacyQa.existsSync()) legacyQa.deleteSync();
 
     // Tier 2 — memory: create only when missing.
-    for (final f in ['.harness/active-context.md', '.harness/progress.md']) {
+    for (final f in [
+      '.harness/active-context.md',
+      '.harness/progress.md',
+      '.harness/lessons.md',
+    ]) {
       if (!File(f).existsSync()) _copyFile('${staging.path}/$f', f);
     }
 
@@ -152,6 +177,17 @@ Future<void> main(List<String> args) async {
       } else {
         _copyFile('${staging.path}/$f', f);
       }
+    }
+    final missing = _missingPermissions(
+      '${staging.path}/.claude/settings.json',
+      '.claude/settings.json',
+    );
+    if (missing.isNotEmpty) {
+      print(
+        'The template also pre-approves these commands; add them to '
+        'permissions.allow in .claude/settings.json if you want them:\n'
+        '${missing.map((e) => '  "$e"').join(',\n')}',
+      );
     }
 
     // Tier 3 — contracts.
@@ -175,6 +211,7 @@ Future<void> main(List<String> args) async {
         'vars': vars,
         if (manifest['installed_at'] != null)
           'installed_at': manifest['installed_at'],
+        'managed_skills': shipped,
         'history': history,
       }),
     );
@@ -350,6 +387,31 @@ void _logTask(String from, String to) {
     text = text.replaceFirst('## Recent Tasks\n', '## Recent Tasks\n$entry\n');
   }
   file.writeAsStringSync(text);
+}
+
+/// Skill folders (those with a `SKILL.md`) directly under [root], sorted.
+List<String> _skillNames(String root) {
+  final dir = Directory(root);
+  if (!dir.existsSync()) return [];
+  return dir
+      .listSync()
+      .whereType<Directory>()
+      .where((d) => File('${d.path}/SKILL.md').existsSync())
+      .map((d) => d.uri.pathSegments.where((s) => s.isNotEmpty).last)
+      .toList()
+    ..sort();
+}
+
+/// Template `permissions.allow` entries missing from the project's file.
+List<String> _missingPermissions(String template, String mine) {
+  List<String> allow(String path) {
+    final permissions = _readJson(File(path))['permissions'];
+    final list = permissions is Map ? permissions['allow'] : null;
+    return list is List ? list.map((e) => e.toString()).toList() : const [];
+  }
+
+  final have = allow(mine).toSet();
+  return allow(template).where((e) => !have.contains(e)).toList();
 }
 
 void _replaceDir(Directory from, Directory to) {

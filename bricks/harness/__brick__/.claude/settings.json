@@ -12,6 +12,7 @@
       "Bash(dart run scripts/agent/verify.dart:*)",
       "Bash(dart run scripts/agent/snapshot.dart)",
       "Bash(dart run scripts/agent/wire_route.dart:*)",
+      "Bash(dart run scripts/agent/learn.dart:*)",
       "Bash(mason make bloc:*)",
       "Bash(bash scripts/agent/verify.sh:*)"
     ],

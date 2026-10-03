@@ -115,6 +115,9 @@ jobs:
       - name: Harness docs reference only real code
         run: dart run tool/harness_check.dart
 
+      - name: Harness learning loop end-to-end
+        run: dart run tool/test_harness_learn.dart
+
       - name: Harness upgrade end-to-end
         run: |
           dart pub global activate mason_cli

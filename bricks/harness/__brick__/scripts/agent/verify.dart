@@ -10,7 +10,9 @@ import 'dart:io';
 ///   dart run scripts/agent/verify.dart --no-snapshot
 ///
 /// Steps stop at the first failure and print the failing tool's output,
-/// so an agent can act on it directly.
+/// so an agent can act on it directly. The lessons step also prints its
+/// summary on success: lessons ready to promote are the next agent's cue
+/// (see the `evolve-harness` skill).
 Future<void> main(List<String> args) async {
   final fast = args.contains('--fast');
   final snapshot = !args.contains('--no-snapshot') && !fast;
@@ -27,6 +29,12 @@ Future<void> main(List<String> args) async {
       const _Step('Architecture lints', 'dart', ['run', 'custom_lint']),
     if (!fast && Directory('test').existsSync())
       const _Step('Tests', 'flutter', ['test', '--reporter', 'failures-only']),
+    if (!fast && File('scripts/agent/learn.dart').existsSync())
+      const _Step('Lessons', 'dart', [
+        'run',
+        'scripts/agent/learn.dart',
+        'check',
+      ], echo: true),
     if (snapshot)
       const _Step('Snapshot', 'dart', ['run', 'scripts/agent/snapshot.dart']),
   ];
@@ -45,13 +53,17 @@ Future<void> main(List<String> args) async {
       return;
     }
     print('ok (${(sw.elapsedMilliseconds / 1000).toStringAsFixed(1)}s)');
+    if (step.echo) print('      ${(result.stdout as String).trim()}');
   }
   print('All quality gates passed.');
 }
 
 class _Step {
-  const _Step(this.label, this.exe, this.args);
+  const _Step(this.label, this.exe, this.args, {this.echo = false});
   final String label;
   final String exe;
   final List<String> args;
+
+  /// Print the tool's output on success too.
+  final bool echo;
 }

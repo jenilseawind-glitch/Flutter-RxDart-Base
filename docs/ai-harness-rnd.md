@@ -40,6 +40,21 @@ Also new: golden rule 13 (lint-enforced), a permission allowlist for safe dev co
 
 **Measured gate cost on a fresh app:** format 0.3 s, analyze 4.2 s, custom_lint **40.1 s**, tests 13.8 s, snapshot 0.4 s. custom_lint takes about two-thirds of the gate, and it is why the edit hook can only run the analyzer.
 
+## What 1.7.0 adds: task skills and a learning loop
+
+1.6.0 made agents *load* the harness. 1.7.0 gives them a procedure for each kind of work, and a way to keep what they learn.
+
+| Gap after 1.6.0 | 1.7.0 change |
+|---|---|
+| One planning skill; hands-on work (an endpoint, a paginated list, a red gate) had only the golden rules to go on | Seven task skills: `add-feature`, `add-endpoint`, `manage-state`, `build-ui`, `write-tests`, `fix-bug`, `evolve-harness`. Each is a numbered procedure with exact commands, cites rules instead of restating them, and is checked by `tool/harness_check.dart`. |
+| Subtle BLoC concurrency was left to the agent: one cancel token shared by two loaders, stale search results, load-more racing a refresh | `manage-state/bloc-recipes.md`: complete recipes. Every CI smoke run pastes them verbatim into a generated app, where they must pass the analyzer, the architecture lints and behavior tests (the double-tap guard, a single debounced search request, load-more failing and racing a refresh, independent sections) |
+| Agents repeated a project's mistakes every session; `active-context.md` holds tasks, not lessons | `.harness/lessons.md` + `scripts/agent/learn.dart`. Lessons are recorded at close-out, recalled at each skill's step 0, promoted after a repeat into skill overlays (`.harness/skills/<skill>.md`), `AGENTS.md` §7 or new project skills, and reopened when the rule they became didn't prevent a repeat. `verify` checks the file and surfaces promotion candidates. |
+| No path for app-level discoveries to improve the base | The `upstream` promotion target and `learn.dart upstream` collect harness-level lessons for the maintainers. Fixes ship as new skill versions that `upgrade.dart` brings to every app, while project knowledge in `.harness/` and project-created skills is never touched. |
+
+Roadmap item 4 (spec-first workflow) is delivered as the `add-feature` skill, apart from automatic contract-to-code generation. Item 7 (memory hygiene) is partly covered by the lessons loop's stale/duplicate/cap review.
+
+**Still unmeasured.** The loop makes learning possible and auditable. It cannot prove that agents improve. That still needs the eval suite (item 1), which can now also score lesson quality: did a recorded lesson prevent the repeat?
+
 ## Roadmap (not built yet), in priority order
 
 1. **Agent eval suite (do this next).** Without it, every harness change is a guess.
@@ -57,9 +72,8 @@ Also new: golden rule 13 (lint-enforced), a permission allowlist for safe dev co
    - No `withOpacity`.
    - No string literals in `Text(...)` inside `lib/features/` (l10n).
    - BLoC subjects must be closed in `dispose()`.
-4. **Spec-first feature workflow.**
-   - A `new-feature` skill: collect the API contract → write `.harness/specs/<feature>.md` with acceptance criteria → `wire_route.dart` → implement → turn each criterion into a BLoC test → `verify`.
-   - Pair it with contract ingestion: OpenAPI/Postman → repo method, model `fromJson` and JSON fixtures for tests. This targets agents' most common failure, which is inventing response shapes.
+4. **Contract ingestion** (the spec-first workflow itself shipped in 1.7.0 as `add-feature`).
+   - OpenAPI/Postman → repo method, model `fromJson` and JSON fixtures for tests, generated instead of written by the agent. This targets agents' most common failure, which is inventing response shapes.
 5. **Opt-in `Stop` hook** that runs `verify.dart --fast` before the agent reports "done", so a red gate cannot be handed back. It is opt-in because it adds about 5 s to every finished turn.
 6. **Runtime loop.** Document a debug-run workflow (`flutter run` + MCP `hot_reload` / `get_runtime_errors` / `widget_inspector`). Add golden/screenshot tests, so agents get a visual signal for UI work instead of none.
 7. **Memory hygiene.**
