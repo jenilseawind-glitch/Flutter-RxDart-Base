@@ -28,7 +28,7 @@ This architecture is **unapologetically opinionated**:
    - ❌ Calling `setState()` in a presentation widget $\rightarrow$ **Compile Error** (Declarative streams only).
    - ❌ Importing RxDart inside UI widgets $\rightarrow$ **Compile Error** (Widgets consume standard Dart `Stream<T>` / `ApiResponse<T>`).
 3. **Deterministic AI Agent Harness**:
-   Includes an integrated cognitive harness (`AGENTS.md`, `CLAUDE.md`, `.agents/skills/`) so AI assistants (Cursor, Claude Code, Antigravity) generate production-grade code that matches your stack on the first attempt.
+   Includes an integrated cognitive harness (`AGENTS.md`, `CLAUDE.md`, `.agents/skills/`) so AI assistants (Cursor, Claude Code, Antigravity) generate production-grade code that matches your stack on the first attempt. Eight task skills carry the procedure for each kind of work, and a lessons loop (`scripts/agent/learn.dart`) turns every session's mistakes into knowledge the next session loads: promoted into project rules and skill overlays locally, and proposed upstream to improve the harness for everyone.
 4. **Self-Healing 3-Tier Migration Engine**:
    Upgrades upstream harness tooling (`scripts/agent/upgrade.dart`) without wiping ongoing sprint memory or custom team rules.
 
@@ -159,7 +159,7 @@ class _ProfilePageState extends State<ProfilePage> {
 |-----------------|---------|---------|---------------------|----------------------|
 | **[`project`](docs/bricks/project.md)** | `1.4.1` | `mason make project` | **Once** per app | Scaffolds Redux store, Dio HTTP/2 engine with 5 interceptors, `ApiExceptionUIExt`, AppRouter, Toast helper (`ShowMessage`), CommonUtils, ResColors, AppTypography, L10n, and Showcase Demo. |
 | **[`bloc`](docs/bricks/bloc.md)** | `1.2.1` | `mason make bloc` | **Repeatedly** per feature | Generates BLoC with `CancelTokenOwner`, injectable Repo, Model folder, Page, Content Widget, and Unit Tests. |
-| **[`harness`](docs/bricks/harness.md)** | `1.6.1` | `mason make harness` | **Once** per project (auto-run by `project`) | Scaffolds `AGENTS.md`, `CLAUDE.md` (imports it), Claude Code skill/subagent/edit hook, Dart MCP server config, `verify.dart` gate, `.harness/` memory, `wire_route.dart` and `upgrade.dart`. |
+| **[`harness`](docs/bricks/harness.md)** | `1.7.0` | `mason make harness` | **Once** per project (auto-run by `project`) | Scaffolds `AGENTS.md`, `CLAUDE.md` (imports it), eight Agent Skills (planning + feature, endpoint, state, UI, tests, bug-fix, harness evolution), the `learn.dart` lessons loop, Claude Code subagent/edit hook, Dart MCP server config, `verify.dart` gate, `.harness/` memory, `wire_route.dart` and `upgrade.dart`. |
 | **[`redux_rxdart_lints`](docs/packages/redux_rxdart_lints.md)** | `0.2.1` | Wired in `analysis_options.yaml` | `dart run custom_lint` / IDE / `verify.dart` | custom_lint plugin enforcing Golden Rules #1, #3, #4 and #13. |
 
 ---

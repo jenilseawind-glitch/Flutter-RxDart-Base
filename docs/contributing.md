@@ -54,9 +54,39 @@ analyzer-enforced.
 - **Full E2E Smoke Test**: Run `dart run tool/smoke.dart` from the repository root. Exercises the full end-to-end flow: `flutter create` -> `mason make project` -> `mason make bloc` -> `dart format` -> `flutter analyze` -> `flutter test` -> `custom_lint`.
 - **Linter Package Analysis**: Run `dart analyze --fatal-infos` inside `packages/redux_rxdart_lints/`.
 - **Formatting & Analysis**: Run `dart format --set-exit-if-changed .` and `dart analyze` across all touched packages and hook directories (`bricks/*/hooks/`).
+- **Harness checks**: `dart run tool/harness_check.dart` (docs name only generated paths, types
+  and lint rules; skills are consistent), `dart run tool/test_harness_upgrade.dart` and
+  `dart run tool/test_harness_learn.dart` (the real `upgrade.dart` and `learn.dart`, end to end).
 - If you change `wire_route.dart` or a hook's file-injection logic, dry-run it against the real
   templates in a scratch copy before trusting the regex — don't assume it's correct from reading
   it. (Silent no-ops in generated/injected files are the failure mode to watch for.)
+
+### Harness skills
+
+The harness ships eight [Agent Skills](https://agentskills.io) in
+`bricks/harness/__brick__/.agents/skills/`, each with a Claude Code entry point in `.claude/skills/`.
+Agents follow them literally, so:
+
+- **Only real code.** Paths, project types and lint rules must exist in the bricks;
+  `tool/harness_check.dart` enforces it. Cite golden rules by number instead of restating them.
+- **Code that compiles and behaves.** `tool/smoke.dart` pastes every code block of
+  `manage-state/bloc-recipes.md` verbatim into the generated app (`tool/harness_recipes.dart`,
+  scaffolding in `tool/recipe_fixture/`), so `flutter analyze`, `custom_lint` and
+  `tool/recipe_fixture/test/recipes_test.dart` fail CI when a recipe stops compiling, breaks a golden
+  rule or stops doing what the skill says. Adding or reordering a block means updating the fixture
+  markers. Snippets in other skills (for example `redux-changes.md`) are checked by hand in a
+  generated app.
+- **Frontmatter.** `name` equals the folder, lowercase-hyphenated, at most 64 characters;
+  `description` at most 1024 characters and says what the skill does *and when to use it*. The
+  `.claude/skills/<name>/SKILL.md` entry point copies both verbatim.
+- **Adding, renaming or removing a skill** changes `managed_skills` in
+  `bricks/harness/__brick__/.harness/version.json`, which `upgrade.dart` uses to replace shipped skills
+  and remove ones no longer shipped. Never touch project-owned files: `.harness/` and everything
+  below the `harness:project-rules` marker.
+- **Lessons from apps.** Projects promote harness-level lessons with the `upstream` target, and
+  `learn.dart upstream` prints them. Verify each against the bricks, fix it where it belongs (skill
+  text, recipe, template, lint rule), and bump the harness like any other change. The
+  `base-maintainer` skill (`.agents/skills/base-maintainer/`) walks through it.
 
 ## 6. URLs point at one canonical org
 
