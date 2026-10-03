@@ -18,7 +18,7 @@ void main() {
   final declared = _declaredTypes();
   final lintRules = _lintRules();
 
-  final problems = <String>[..._skillProblems()];
+  final problems = <String>[..._skillProblems(), ..._mustacheProblems()];
   final code = RegExp(r'`([^`\n]+)`');
 
   for (final doc in docs) {
@@ -247,6 +247,30 @@ List<String> _skillProblems() {
   if (managed.join(',') != expected.join(',')) {
     problems.add('$brick/.harness/version.json: managed_skills must list '
         'exactly the shipped skills, sorted: ${expected.join(', ')}');
+  }
+  return problems;
+}
+
+/// Mason renders every brick file as a mustache template: a tag such as
+/// `'{{$key}}'` in a script or skill is silently rewritten (here to '') in
+/// generated apps. Only the files meant to be templated may contain one.
+List<String> _mustacheProblems() {
+  const brick = 'bricks/harness/__brick__';
+  const templated = {'AGENTS.md', 'CLAUDE.md', '.harness/version.json'};
+  final tag = RegExp(r'\{\{[^{}]*\}\}');
+  final problems = <String>[];
+  for (final file
+      in Directory(brick).listSync(recursive: true).whereType<File>()) {
+    final rel = p.relative(file.path, from: brick).replaceAll(p.separator, '/');
+    if (templated.contains(rel)) continue;
+    final lines = file.readAsLinesSync();
+    for (var i = 0; i < lines.length; i++) {
+      final m = tag.firstMatch(lines[i]);
+      if (m != null) {
+        problems.add('${file.path}:${i + 1}: `${m.group(0)}` is a mustache '
+            'tag; mason rewrites it in generated apps');
+      }
+    }
   }
   return problems;
 }

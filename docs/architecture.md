@@ -1,7 +1,7 @@
 # Flutter Hybrid Architecture Specification
 
 **Architecture Pattern:** Hybrid State Management (Redux Global Session + RxDart Ephemeral BLoCs) with Feature-First Clean Architecture  
-**Tooling:** Mason CLI Workspace (`project` & `bloc` bricks)
+**Tooling:** Mason bricks (`project`, `bloc`, `harness`) and the `redux_rxdart_lints` analyzer plugin
 
 ---
 
@@ -18,7 +18,7 @@ Before diving into components, internalize the core decision rule:
 > - Auth JWT / Session Token
 > - User Profile Metadata
 > - App Locale Preference (`en`, `hi`)
-> - *Persisted automatically to `SharedPreferences` via middleware.*
+> - *Persisted automatically via middleware: `SharedPreferences`, or `flutter_secure_storage` for the token and user data when generated with `include_secure_storage`.*
 >
 > 🔵 **NO $\rightarrow$ Local Ephemeral State (`RxDart BLoC`)**
 > - Screen API Fetch States (`ApiResponse<T>`)
@@ -66,7 +66,7 @@ Before diving into components, internalize the core decision rule:
 │   • CancelTokenOwner (lifecycle-safe request cancellation)             │
 │   • DioClient (HTTP/2 Engine with 5-step Interceptor chain)            │
 │   • Interceptors: Connectivity → Auth → Platform → Retry → ErrorMap    │
-│   • Sealed ApiException Hierarchy (8 subtypes) + safe UI mapping       │
+│   • Sealed ApiException hierarchy (13 subtypes) + safe UI mapping      │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -116,17 +116,21 @@ mason make project
 
 # 2. Generate a feature module (run REPEATEDLY per screen)
 mason make bloc
+
+# With the harness: scaffold and wire the route in one step
+dart run scripts/agent/wire_route.dart my_feature
 ```
 
 ### 3.2 Feature Brick Output (`mason make bloc`)
 
 ```
 lib/features/my_feature/
-├── bloc/my_feature_bloc.dart          # Clean BLoC with CancelTokenOwner & $ stream convention
-├── model/                             # Empty model directory for feature models
-├── repo/my_feature_repo.dart          # Injectable repository (ApiBaseHelper DI + CancelToken)
-├── widgets/my_feature_content_widget.dart # Decoupled content widget
-└── my_feature_page.dart               # StatefulWidget with AppScaffold & ui_components
+├── bloc/my_feature_bloc.dart          # fetch({refresh}), data$ stream, CancelTokenOwner, guarded emits
+├── model/my_feature_model.dart        # defensive fromJson
+├── repo/my_feature_repo.dart          # transport only: ApiBaseHelper call, raw Map, CancelToken
+├── widgets/my_feature_content_widget.dart # stateless, receives the parsed model
+└── my_feature_page.dart               # owns the BLoC: Scaffold + RefreshIndicator + AppResponseBuilder
+test/features/my_feature/bloc/my_feature_bloc_test.dart  # 7 tests: states, errors, retry, cancel, refresh, dispose
 ```
 
 ---
@@ -138,4 +142,4 @@ lib/features/my_feature/
 2. **Zero-Boilerplate Reactive Streams**: `AppResponseBuilder<T>` removes repetitive `StreamBuilder` + `switch` blocks across screens.
 3. **Automatic Request Cancellation**: In-flight HTTP requests are automatically aborted via `CancelTokenOwner` when screens are popped or re-fetched.
 4. **Multipart & File Upload Ready**: Built-in `postFormData` and `putFormData` in `ApiBaseHelper`.
-5. **Feature-First Clean Architecture**: Scalable, modular `lib/features/` organization.
+5. **Feature-First Clean Architecture**: Scalable, modular `lib/features/` organization.
