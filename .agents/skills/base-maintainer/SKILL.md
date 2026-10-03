@@ -27,6 +27,8 @@ Root `AGENTS.md` (gates and maintainer rules) and `docs/contributing.md` (the de
 - Describe the generated code as it is: read the template before quoting a signature. Cite golden rules by number.
 - Code blocks must compile and behave. `tool/smoke.dart` pastes every block of `manage-state/bloc-recipes.md` verbatim into its generated app (markers in `tool/recipe_fixture/`, behavior tests in `tool/recipe_fixture/test/recipes_test.dart`). Adding, removing or reordering a block means updating those markers. Snippets in other skill files: paste them into a generated app by hand, and run `flutter analyze --fatal-infos` plus a test.
 - New, renamed or removed skill → update `managed_skills` in `.harness/version.json` (sorted). `upgrade.dart` replaces exactly those skills in apps and removes ones no longer listed. Lessons scoped to a removed skill show up as orphans in each app's `learn.dart review`, so name the replacement in the CHANGELOG.
+- Mason renders every brick file as a mustache template, so a shipped script or skill must not contain a `{{...}}` tag (it would be rewritten in apps; `harness_check` fails on it). Build such strings without a literal double brace.
+- Renaming or removing a file in `scripts/agent/` or a shipped skill: add its old path to `_retiredFiles` in `upgrade.dart`. The upgrade deletes only files listed there or shipped by the brick, and keeps everything else as the project's own.
 - Every task skill keeps the same frame: step 0 loads `.harness/skills/<skill>.md` plus `learn.dart list <skill>`, and the end is the `AGENTS.md` §6 close-out. That frame is how apps learn.
 - Never write to project-owned paths from the brick: `.harness/` memory and anything below the `harness:project-rules` marker.
 

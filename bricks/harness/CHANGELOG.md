@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.7.1
+
+Upgrade fixes from a real project's 1.5 → 1.6 upgrade, which stayed on an old version, deleted team scripts and dropped team rules.
+
+- **Renders the version you asked for.** `upgrade.dart` renders the harness in a throwaway mason workspace that names `upstream_repo`, so a project `mason.yaml`/`mason-lock.json` pin or a stale global brick can no longer serve an old version (the cause of "upstream is at 1.7.0 but the brick renders 1.6.1" even after `mason upgrade -g`). `--ref <git-ref>` picks a branch, tag or commit; `--brick <dir>` renders a local brick. Offline, it falls back to the registered brick and says so. It never downgrades without `--force`.
+- **The new engine applies its own upgrade.** When the rendered harness ships a different `upgrade.dart`, that engine applies the upgrade, so fixes like these take effect on the upgrade that ships them instead of the one after.
+- **Never deletes your files.** `scripts/agent/` and shipped skill folders are no longer replaced wholesale: every file the brick ships is written, files older harness versions shipped and later retired are removed (including the stale `.cursor/skills/flutter-senior-dev/` mirror from 1.4.x), and anything else (`check_ids.dart`, `stop-gate.ps1`, notes) is kept and listed.
+- **Keeps your `upstream_repo`.** A project pointing `.harness/version.json` at its own fork or mirror keeps it across upgrades; only the stock repositories follow the template.
+- **Settings report.** A hook in `.claude/settings.json` that runs a missing script is reported, and so are template hooks and permissions the project's settings lack.
+- **Pre-1.6 contracts keep every team line.** Instead of dropping whole sections whose heading the harness once shipped, `AGENTS.md`/`CLAUDE.md` migration drops only lines that a 1.4.0–1.5.1 template actually contained. A rule added inside "Hard Rules", a line added to the "Folder Map" block or a hand-written `AGENTS.md` now lands below the project-rules marker under "Kept from your previous version of this file".
+- Upgrading from ≤ 1.7.0: the old engine runs the upgrade, so fetch this one first (see README, "Upgrading from 1.7.0 or older").
+
 ## 1.7.0
 
 Task skills and a self-learning loop: agents get a procedure for each kind of work on this architecture, and every session's mistakes become lessons that the next session loads.
