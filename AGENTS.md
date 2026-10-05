@@ -9,9 +9,9 @@ This repository is the Mason Workspace source repository providing templates, br
 ├── bricks/
 │   ├── project/                  # Scaffolds initial Flutter app architecture (v1.4.1)
 │   ├── bloc/                     # Scaffolds feature modules with BLoC and tests (v1.2.1)
-│   └── harness/                  # Scaffolds AI Agent Harness onto apps (v1.7.3)
+│   └── harness/                  # Scaffolds AI Agent Harness onto apps (v1.7.4)
 ├── packages/
-│   └── redux_rxdart_lints/       # Custom lint package enforcing golden rules (v0.2.1)
+│   └── redux_rxdart_lints/       # Custom lint package enforcing golden rules (v0.3.0)
 ├── tool/
 │   ├── smoke.dart                # E2E: create -> project -> bloc -> strict format -> recipes -> analyze -> test -> lint
 │   ├── harness_recipes.dart      # Pastes the harness BLoC recipes (verbatim) into the smoke app; fixture in recipe_fixture/

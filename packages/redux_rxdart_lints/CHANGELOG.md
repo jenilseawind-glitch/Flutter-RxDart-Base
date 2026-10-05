@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+- Added `no_exception_tostring` rule enforcing Golden Rule #2: Widgets must show errors with `error.userFacingMessage(context)` instead of displaying `e.toString()`.
+
 ## 0.2.1
 
 - SDK floor lowered to Dart ≥ 3.9 (what `analyzer ^8.4` needs). 0.2.0 required Dart ≥ 3.13, which blocked projects on Flutter ≤ 3.44.

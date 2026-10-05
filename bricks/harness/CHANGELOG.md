@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.4
+
+- **Compiler-enforced Golden Rules:** Added `no_exception_tostring` custom lint to `redux_rxdart_lints` to statically enforce Rule 2 (never displaying `e.toString()` in UI widgets).
+- **Tooling optimization:** Deleted `scripts/agent/on_edit.dart` and its Claude Code hook. Synchronous analyzer runs on every file edit added unacceptable latency to the AI loop; agents now rely on the comprehensive `verify.dart` gate at the end of a task.
+- **Skill enhancements:** Updated `add-endpoint` skill to explicitly instruct agents to use the Dart MCP `lsp` references tool instead of regex or `grep`.
+
 ## 1.7.3
 
 - **Repository patterns & capability mixins.** Expanded Golden Rule 1 in `AGENTS.md` and the `add-endpoint` skill to formally codify repository architecture learned from production apps:

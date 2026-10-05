@@ -9,7 +9,6 @@
 - Subagent `flutter-qa` (`.claude/agents/flutter-qa.md`, configured with `haiku`) does a one-shot architecture review. Never auto-spawn; invoke only when explicitly asked.
 - Context hygiene: Run `/clear` when switching tasks to keep sessions under 50k context. Run `/compact` mid-task after completing a layer (e.g. data + BLoC done, before UI). Grep or read line ranges rather than loading entire large files into context.
 - The `dart` MCP server is pre-approved: use `mcp__dart__*` tools for analysis, symbol lookup, pub.dev search and the running app (hot reload, runtime errors, widget tree).
-- A `PostToolUse` hook formats and analyzes each Dart file you edit; exit code 2 means fix the reported issues now.
 - In FVM projects (`.fvm/` or `.fvmrc`), prefix CLI commands with `fvm` (e.g. `fvm dart run scripts/agent/verify.dart`, `fvm flutter test`).
 
 <!-- harness:project-rules — Everything below this line is yours. `upgrade.dart` keeps it verbatim. -->

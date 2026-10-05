@@ -203,4 +203,4 @@ Use the generated `Fake<Feature>Repo` pattern. Details: `.agents/skills/write-te
 Run `dart run scripts/agent/verify.dart`, then close out per `AGENTS.md` §6. Record any backend quirk you found (date format, pagination style, an error field name) with `learn.dart add add-endpoint ...`, because the next endpoint on this backend will hit it too.
 
 ## Changing an existing endpoint
-Find every caller first. Use the MCP `lsp` references or grep for the repo method and the `ApiConstants` getter. Update the model and its tests together. When a field is removed, keep parsing tolerant until the backend change has shipped everywhere.
+Find every caller first. Use the Dart MCP `lsp` references tool instead of regex or `grep` to find every usage of the repo method and the `ApiConstants` getter. Update the model and its tests together. When a field is removed, keep parsing tolerant until the backend change has shipped everywhere.

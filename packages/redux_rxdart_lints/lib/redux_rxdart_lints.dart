@@ -4,6 +4,7 @@ import 'src/rules/no_rxdart_in_ui.dart';
 import 'src/rules/no_screenutil_in_private_widget.dart';
 import 'src/rules/no_setstate_in_widget.dart';
 import 'src/rules/repo_transport_only.dart';
+import 'src/rules/no_exception_tostring.dart';
 
 PluginBase createPlugin() => _ReduxRxdartLinter();
 
@@ -14,5 +15,6 @@ class _ReduxRxdartLinter extends PluginBase {
     NoScreenutilInPrivateWidget(),
     NoSetStateInWidget(),
     RepoTransportOnly(),
+    NoExceptionToString(),
   ];
 }

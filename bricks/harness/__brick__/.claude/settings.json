@@ -38,19 +38,5 @@
       "Read(**/*.mobileprovision)"
     ]
   },
-  "enableAllProjectMcpServers": true,
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|MultiEdit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "dart \"$CLAUDE_PROJECT_DIR/scripts/agent/on_edit.dart\"",
-            "timeout": 60
-          }
-        ]
-      }
-    ]
-  }
+  "enableAllProjectMcpServers": true
 }

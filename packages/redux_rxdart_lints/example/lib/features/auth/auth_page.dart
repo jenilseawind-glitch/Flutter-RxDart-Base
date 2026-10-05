@@ -21,6 +21,13 @@ class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
     _toggle();
+    try {
+      throw Exception('Oops');
+    } catch (e) {
+      // expect_lint: no_exception_tostring
+      final text = e.toString();
+      return Text(text);
+    }
     // Public widget: ScreenUtil is fine here.
     return SizedBox(width: 10.w, child: const _Badge());
   }
