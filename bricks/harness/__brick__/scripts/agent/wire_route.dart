@@ -2,6 +2,10 @@
 
 import 'dart:io';
 
+/// Returns true when FVM manages this project's SDK.
+bool _useFvm() =>
+    Directory('.fvm').existsSync() || File('.fvmrc').existsSync();
+
 void main(List<String> args) {
   if (args.isEmpty) {
     print(
@@ -55,7 +59,10 @@ void main(List<String> args) {
     exit(1);
   }
 
-  _ensureFeatureScaffolded(featureSnake);
+  final fvm = _useFvm();
+  if (fvm) print('   FVM detected.');
+
+  _ensureFeatureScaffolded(featureSnake, fvm: fvm);
 
   final routesFile = _findRoutesFile();
   if (routesFile == null) {
@@ -86,11 +93,16 @@ void main(List<String> args) {
     constantName: constantName,
   );
 
-  Process.runSync('dart', [
-    'format',
-    routesFile.path,
-    routerFile.path,
-  ], runInShell: true);
+  Process.runSync(
+    fvm ? 'fvm' : 'dart',
+    [
+      if (fvm) 'dart',
+      'format',
+      routesFile.path,
+      routerFile.path,
+    ],
+    runInShell: true,
+  );
 
   print('✅ Successfully wired route:');
   print(
@@ -167,21 +179,27 @@ String? _extractProjectName(File pubspec) {
   }
 }
 
-void _ensureFeatureScaffolded(String featureSnake) {
+void _ensureFeatureScaffolded(String featureSnake, {required bool fvm}) {
   final pageFile = File('lib/features/$featureSnake/${featureSnake}_page.dart');
   if (pageFile.existsSync()) return;
 
   print(
     '   ℹ️ Feature "$featureSnake" not found. Scaffolding via `mason make bloc`...',
   );
-  final result = Process.runSync('mason', [
-    'make',
-    'bloc',
-    '--feature_name',
-    featureSnake,
-    '-o',
-    '.',
-  ], runInShell: true);
+  final result = Process.runSync(
+    fvm ? 'fvm' : 'mason',
+    [
+      if (fvm) 'exec',
+      if (fvm) 'mason',
+      'make',
+      'bloc',
+      '--feature_name',
+      featureSnake,
+      '-o',
+      '.',
+    ],
+    runInShell: true,
+  );
 
   if (result.exitCode != 0 || !pageFile.existsSync()) {
     print('❌ `mason make bloc --feature_name $featureSnake` failed:');

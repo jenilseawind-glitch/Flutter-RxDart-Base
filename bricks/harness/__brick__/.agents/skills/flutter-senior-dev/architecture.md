@@ -1,8 +1,9 @@
-# Base architecture snapshot (project brick 1.4.1 · bloc 1.2.1 · harness 1.7.0)
+# Base architecture snapshot (project brick 1.4.1 · bloc 1.2.1 · harness 1.7.3)
 
 Contents: 1 Layout, 2 Networking, 3 Redux, 4 BLoC and page, 5 UI kit, 6 Routing, 7 Localization and sizing, 8 Bricks, harness and lints, 9 Dependencies.
 
 A summary of what the bricks generate. The working copy wins: re-read the real file before quoting a signature.
+
 
 ## 1. Layout
 
@@ -54,6 +55,9 @@ test/features/<name>/bloc/<name>_bloc_test.dart
 - UI copy: `error.userFacingMessage(context)` (`utils/extensions/exception_ext.dart`). Shown verbatim only for `BusinessLogicException` and non-empty `ValidationException`; the rest are localized.
 - `ApiResponse<T>` (sealed): `InitialResponse`, `LoadingResponse`, `SuccessResponse(data)`, `ErrorResponse(ApiException error, {RetryCallback? retry})`; `.data` is non-null only on success.
 - `CancelTokenOwner`: `cancelToken`, `isCancelled`, `cancelRequests([reason])`, `createNewToken()`.
+- **Repositories (transport only)**: call `ApiBaseHelper`, return raw `Map<String, dynamic>`, never call `fromJson` (enforced by `repo_transport_only` lint), forward `CancelToken? cancelToken`, and let exceptions propagate.
+- **Repository composition (capability mixins)**: exactly one repository per BLoC. Never inject multiple repositories into a BLoC; never inherit other feature repositories. When multiple features share secondary calls (e.g. dropdown options, tags, profile fetch, logout), extract the call into a `mixin <Capability>Mixin` and compose onto the feature repository with `with`.
+
 
 ## 3. Redux (session only)
 

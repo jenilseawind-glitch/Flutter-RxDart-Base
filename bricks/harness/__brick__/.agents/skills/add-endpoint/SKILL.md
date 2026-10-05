@@ -50,6 +50,123 @@ Future<Map<String, dynamic>> fetchOrders({
 - There is no `patch`. If the backend needs PATCH, add a `patch` method to `ApiBaseHelper` that mirrors `put` exactly. That changes shared networking, so say so in your summary.
 - Let exceptions propagate. The repo never catches.
 
+### Repository architecture & capability mixins
+- **One BLoC, one repo**: A BLoC never holds two repository instances (e.g. `_inquiriesRepo` and `_agentsRepo`). That breaks 1:1 cohesion and doubles mock setup in tests.
+- **Never extend another feature's repo**: `class InquiriesRepo extends AllAgentsRepo` is an anti-pattern. Inheritance leaks unrelated and sensitive endpoints (audit-logged OTP reveals, delete operations) into features that should not have access to them.
+- **Compose shared endpoints with mixins**: When multiple features need a secondary capability (e.g. an agent dropdown for filtering, inquiry tags, profile fetch, logout), extract that capability into a `mixin`:
+
+```dart
+mixin AgentsListMixin {
+  final ApiBaseHelper _api = ApiBaseHelper.instance;
+
+  @protected
+  ApiBaseHelper get api => _api;
+
+  Future<Map<String, dynamic>> getAgents({
+    int? page,
+    int? limit,
+    CancelToken? cancelToken,
+  }) {
+    final query = <String, dynamic>{
+      if (page != null) 'page': page,
+      if (limit != null) 'limit': limit,
+    };
+    return _api.get(
+      ApiConstants.agentsEndpoint,
+      queryParameters: query,
+      cancelToken: cancelToken,
+    );
+  }
+}
+```
+
+Then compose it onto the feature repo with `with`:
+```dart
+final class InquiriesRepo with AgentsListMixin {
+  // Exposes getAgents() alongside its own inquiry methods
+}
+```
+In tests, a single `FakeInquiriesRepo` extends or implements `InquiriesRepo` and overrides whatever the test exercises.
+
+### Clean query & filter serialization
+Never send empty strings or null keys (`?search=&status=&tag=`) to the backend. Use a private helper to build clean maps:
+
+```dart
+Map<String, dynamic> _filterParams(OrderFilter filter) {
+  final query = <String, dynamic>{};
+  if (filter.search.trim().isNotEmpty) query['search'] = filter.search.trim();
+  if (filter.status != null && filter.status!.isNotEmpty) query['status'] = filter.status;
+  if (filter.fromDate != null) {
+    query['dateFrom'] = filter.fromDate!.toIso8601String().split('T').first;
+  }
+  return query;
+}
+```
+Spread it into the query map: `queryParameters: {'page': page, 'limit': limit, ..._filterParams(filter)}`.
+
+### Multipart file uploads
+Use `postFormData` or `putFormData` with `MultipartFile.fromFile`:
+
+```dart
+Future<Map<String, dynamic>> updateProfile({
+  required String name,
+  File? avatar,
+  CancelToken? cancelToken,
+}) async {
+  final data = <String, dynamic>{
+    'name': name,
+    if (avatar != null)
+      'avatar': await MultipartFile.fromFile(
+        avatar.path,
+        filename: avatar.path.split(Platform.pathSeparator).last,
+      ),
+  };
+  return _api.putFormData(
+    ApiConstants.profileEndpoint,
+    data: data,
+    cancelToken: cancelToken,
+  );
+}
+```
+
+### Large fetches and timeout overrides (`all=true`)
+When an endpoint supports dumping all rows for bulk selection or export (e.g. `all=true` dropping paging), the default 30s timeout might cut off the server. Override `receiveTimeout`:
+
+```dart
+Future<Map<String, dynamic>> getAllOrders({CancelToken? cancelToken}) {
+  return _api.get(
+    ApiConstants.ordersEndpoint,
+    queryParameters: const {'all': 'true'},
+    options: Options(receiveTimeout: const Duration(minutes: 5)),
+    cancelToken: cancelToken,
+  );
+}
+```
+
+### Binary / non-JSON responses (PDF / file downloads)
+When an endpoint returns raw bytes rather than JSON, access `_api.dio` directly with `ResponseType.bytes` and `validateStatus`:
+
+```dart
+Future<List<int>> downloadInvoicePdf(String id, {CancelToken? cancelToken}) async {
+  final response = await _api.dio.get<List<int>>(
+    ApiConstants.invoicePdfEndpoint(id),
+    options: Options(
+      responseType: ResponseType.bytes,
+      validateStatus: (_) => true,
+      receiveTimeout: const Duration(minutes: 5),
+    ),
+    cancelToken: cancelToken,
+  );
+  if (response.statusCode != null &&
+      response.statusCode! >= 200 &&
+      response.statusCode! < 300) {
+    return response.data ?? const [];
+  }
+  throw BusinessLogicException('Failed to download invoice');
+}
+```
+
+
 ## 4. Model: defensive parsing (rule 12)
 ```dart
 factory OrderModel.fromJson(Map<String, dynamic> json) => OrderModel(

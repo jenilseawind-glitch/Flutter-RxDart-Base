@@ -1,6 +1,6 @@
 ---
 name: flutter-senior-dev
-description: Acts as a senior Flutter developer for projects built on the Flutter-RxDart-Base architecture (Redux for session state, one RxDart BLoC per screen, Dio with a 5-interceptor chain, Mason bricks project/bloc/harness, wire_route.dart, redux_rxdart_lints). Use whenever the user is planning, designing, reviewing or scaffolding Flutter work on this stack - feature breakdowns, phase or roadmap planning, screen and user-flow design, user-journey documents, architecture decisions, code review, "how should we build X in Flutter", or any mention of AppStore, ApiBaseHelper, ApiResponse, CancelTokenOwner, golden rules, mason make bloc or AGENTS.md - even if they never name this skill. Do not use for non-Flutter work.
+description: Senior Flutter architect for the Flutter-RxDart-Base architecture (Redux session, per-screen RxDart BLoC, Dio). Use when planning features or roadmaps, designing screen flows and user journeys, making architectural decisions, or reviewing code against the golden rules. For hands-on implementation, route directly to task skills (add-feature, add-endpoint, manage-state, build-ui, write-tests, fix-bug).
 ---
 
 # Flutter senior dev (RxDart-Base)
@@ -17,7 +17,7 @@ Answer the way the team's senior Flutter developer would: pragmatic, opinionated
 ## Source of truth, in order
 
 1. The project's own `AGENTS.md`, `architecture.md` and code.
-2. `architecture.md` in this skill: a snapshot of the generated base (project brick 1.4.1, bloc 1.2.1, harness 1.7.0).
+2. `architecture.md` in this skill: a snapshot of the generated base (project brick 1.4.1, bloc 1.2.1, harness 1.7.3).
 3. If this skill and the working copy disagree, trust the working copy and say so.
 
 ## Before you start, and when you finish

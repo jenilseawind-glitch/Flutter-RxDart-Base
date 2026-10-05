@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.7.3
+
+- **Repository patterns & capability mixins.** Expanded Golden Rule 1 in `AGENTS.md` and the `add-endpoint` skill to formally codify repository architecture learned from production apps:
+  - **One BLoC, one repo:** a BLoC holds only its own feature repository. Never inject multiple repositories into a BLoC.
+  - **Capability composition via mixins:** when multiple features need secondary capabilities (dropdown option fetches, tags, profile info, logout), compose them using `mixin <Capability>Mixin` (`with FooMixin`) rather than `extends OtherFeatureRepo` (which leaks sensitive or unrelated methods).
+  - **Sanitized query & body parameters:** dedicated `_filterParams` helper pattern preventing empty strings or null keys (`?search=&tag=`) from reaching backends.
+  - **Multipart file uploads:** clean `postFormData`/`putFormData` with `MultipartFile.fromFile`.
+  - **Large data & export timeout overrides:** patterns for bulk calls (`all=true`) with `Options(receiveTimeout: ...)`.
+  - **Binary / non-JSON responses:** patterns for streaming bytes (e.g. invoice PDFs) with status validation and JSON error envelope parsing.
+- **Token & context optimization suite:**
+  - **Scoped skill routing:** Scoped down `flutter-senior-dev` description frontmatter to prevent Claude Code and agents from greedily injecting the full architectural skill into context on generic mentions of core terms (e.g. `AppStore`, `ApiResponse`, `golden rules`). Hands-on tasks route directly to specific task skills (`add-feature`, `add-endpoint`, `manage-state`, `build-ui`, `write-tests`, `fix-bug`).
+  - **Lazy reference loading:** Explicitly configured entry points to prevent eager loading of `architecture.md`, `planning-checklist.md`, and `base-gaps.md` unless specifically required.
+  - **Cheaper & scoped subagent:** Configured `flutter-qa` (`.claude/agents/flutter-qa.md`) with `model: haiku` (drastically reducing subagent token costs) and bounded its review scope to the target feature folder (`lib/features/<name>/`) rather than scanning whole project trees.
+  - **Session context hygiene:** Added explicit `/clear` and `/compact` lifecycle rules in `CLAUDE.md` to prevent context bloating past 150k tokens during multi-turn workflows.
+
+## 1.7.2
+
+- **FVM support across all harness scripts and tooling.** Agent scripts (`verify.dart`, `wire_route.dart`, `upgrade.dart`, `on_edit.dart`) and shell wrappers (`verify.sh`, `verify.ps1`) auto-detect `.fvm/` or `.fvmrc` and invoke `fvm dart` / `fvm flutter` / `fvm exec mason` instead of bare `dart` / `flutter` / `mason`. `.claude/settings.json` pre-approves FVM-prefixed commands. `AGENTS.md` and `CLAUDE.md` instruct agents to prefix bare CLI commands with `fvm`. Previously, the harness failed on FVM-managed projects because system Dart was too old for the project's SDK constraint, causing agents to abandon the harness procedures.
+
 ## 1.7.1
 
 Upgrade fixes from a real project's 1.5 → 1.6 upgrade, which stayed on an old version, deleted team scripts and dropped team rules.

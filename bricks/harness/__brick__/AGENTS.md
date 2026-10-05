@@ -9,7 +9,7 @@ Rules marked 🔒 fail the quality gate when broken (`redux_rxdart_lints`).
 - **Dio**: HTTP/2, fixed interceptor order — Connectivity → Auth → PlatformInjector → Retry → ErrorMapping. Never reorder.
 
 ## 2. Golden Rules
-1. 🔒 **Repository is transport only**: call `ApiBaseHelper`, return the raw `Map<String, dynamic>`. Never `fromJson`/`fromMap` (calls or tear-offs) in `repo/` or `*_repo.dart`.
+1. 🔒 **Repository is transport only**: call `ApiBaseHelper`, return the raw `Map<String, dynamic>`. Never `fromJson`/`fromMap` (calls or tear-offs) in `repo/` or `*_repo.dart`. **One BLoC, one repo**: a BLoC never holds two repos. Compose shared capabilities (e.g. dropdowns, tags, profile, logout) with `mixin <Capability>Mixin` (`with FooMixin`) — never `extends OtherFeatureRepo` (inheritance leaks unrelated/sensitive methods).
 2. **BLoC owns logic and state**: await the repo, parse with `Model.fromJson`, emit `ApiResponse<T>`. Widgets show errors with `error.userFacingMessage(context)` (or let `AppResponseBuilder` do it). Never display `e.toString()`.
 3. 🔒 **Zero `setState`** in feature widgets. Drive UI from streams (`AppResponseBuilder`, `StreamBuilder`). Only design-system primitives in `lib/utils/widgets/ui/` may hold purely visual state.
 4. 🔒 **Zero RxDart outside BLoCs**: widgets never import `rxdart`; they consume plain `Stream<T>` / `ApiResponse<T>`.
@@ -34,6 +34,7 @@ Look for `*.postman_collection.json`, then OpenAPI/Swagger, then docs. Add endpo
 - **Edit hook** (Claude Code): every edited Dart file is formatted and analyzed immediately; fix reported issues before moving on.
 - **Learning loop**: `dart run scripts/agent/learn.dart list|add|hit|review|promote` over `.harness/lessons.md` (see §6).
 - **Harness upgrade**: `dart run scripts/agent/upgrade.dart` (keeps `.harness/`, your own skills and everything below the project-rules marker).
+- **FVM projects**: when `.fvm/` or `.fvmrc` exists, prefix bare CLI commands with `fvm` (e.g. `fvm dart run scripts/agent/verify.dart`, `fvm flutter test`). Agent scripts (`verify.dart`, `wire_route.dart`, `on_edit.dart`) detect FVM automatically.
 
 ## 5. Git
 - Never commit or push unless asked. Run the quality gate first.

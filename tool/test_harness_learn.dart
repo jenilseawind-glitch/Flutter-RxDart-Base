@@ -64,8 +64,9 @@ Future<void> main() async {
       'commit:abc1234',
     ]);
     check('add records L1', r.exitCode == 0 && out(r).contains('L1'), out(r));
-    final template =
-        File(p.join(root, brick, '.harness/lessons.md')).readAsStringSync();
+    final template = File(p.join(root, brick, '.harness/lessons.md'))
+        .readAsStringSync()
+        .replaceAll('\r\n', '\n');
     String head(String s) => s.substring(0, s.indexOf('## Active'));
     check('a created store has the brick template header',
         head(lessons()) == head(template));

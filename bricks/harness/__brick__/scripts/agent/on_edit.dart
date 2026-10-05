@@ -12,6 +12,8 @@ import 'dart:io';
 ///
 /// Any other tool, file type or malformed input is a silent no-op (exit 0):
 /// a hook must never block unrelated work.
+///
+/// FVM: when `.fvm/` or `.fvmrc` exists, runs `fvm dart` instead of `dart`.
 Future<void> main() async {
   final String path;
   try {
@@ -32,13 +34,15 @@ Future<void> main() async {
     return;
   }
 
-  await Process.run('dart', ['format', path], runInShell: true);
+  final fvm = _useFvm();
 
-  final analyze = await Process.run('dart', [
+  await _run(fvm, 'dart', ['format', path]);
+
+  final analyze = await _run(fvm, 'dart', [
     'analyze',
     '--fatal-infos',
     path,
-  ], runInShell: true);
+  ]);
   if (analyze.exitCode != 0) {
     stderr
       ..writeln(
@@ -48,4 +52,14 @@ Future<void> main() async {
       ..write(analyze.stderr);
     exit(2);
   }
+}
+
+/// Returns true when FVM manages this project's SDK.
+bool _useFvm() =>
+    Directory('.fvm').existsSync() || File('.fvmrc').existsSync();
+
+/// Runs a `dart` or `flutter` command through FVM when applicable.
+Future<ProcessResult> _run(bool fvm, String exe, List<String> args) {
+  if (fvm) return Process.run('fvm', [exe, ...args], runInShell: true);
+  return Process.run(exe, args, runInShell: true);
 }

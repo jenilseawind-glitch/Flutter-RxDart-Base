@@ -118,9 +118,10 @@ Future<void> main(List<String> args) async {
         (!mine.existsSync() ||
             mine.readAsStringSync() != theirs.readAsStringSync())) {
       print('Handing over to the $target upgrade engine...');
+      final fvm = _useFvm();
       final child = await Process.start(
-        'dart',
-        [theirs.path, '--apply', out],
+        fvm ? 'fvm' : 'dart',
+        [if (fvm) 'dart', theirs.path, '--apply', out],
         mode: ProcessStartMode.inheritStdio,
         runInShell: true,
       );
@@ -132,6 +133,11 @@ Future<void> main(List<String> args) async {
     if (staging.existsSync()) staging.deleteSync(recursive: true);
   }
 }
+
+/// Returns true when FVM manages this project's SDK.
+bool _useFvm() =>
+    Directory('.fvm').existsSync() || File('.fvmrc').existsSync();
+
 
 class _Options {
   _Options(List<String> args) {
