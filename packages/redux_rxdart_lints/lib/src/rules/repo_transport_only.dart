@@ -1,7 +1,9 @@
+import 'package:analyzer/analysis_rule/analysis_rule.dart';
+import 'package:analyzer/analysis_rule/rule_context.dart';
+import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/error/error.dart' show DiagnosticSeverity;
-import 'package:analyzer/error/listener.dart' show DiagnosticReporter;
-import 'package:custom_lint_builder/custom_lint_builder.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/error/error.dart';
 
 import '../lib_path.dart';
 
@@ -12,52 +14,38 @@ import '../lib_path.dart';
 /// A repository file is any file under a `repo/` or `repository/` directory
 /// in `lib/`, or named `*_repo.dart` / `*_repository.dart`.
 /// Flags calls *and* tear-offs of `fromJson` / `fromMap`.
-class RepoTransportOnly extends DartLintRule {
-  RepoTransportOnly() : super(code: _code);
+class RepoTransportOnly extends AnalysisRule {
+  RepoTransportOnly()
+      : super(
+          name: 'repo_transport_only',
+          description: 'Repositories return raw maps; BLoCs parse models.',
+        );
 
-  static const _code = LintCode(
-    name: 'repo_transport_only',
-    problemMessage:
-        'Repository must not parse models. Call .fromJson() in the BLoC, '
+  static const LintCode code = LintCode(
+    'repo_transport_only',
+    'Repository must not parse models. Call .fromJson() in the BLoC, '
         'not in repo/ files (AGENTS.md Golden Rule #1).',
-    errorSeverity: DiagnosticSeverity.ERROR,
+    severity: DiagnosticSeverity.ERROR,
   );
 
   static const _parsers = {'fromJson', 'fromMap'};
 
   @override
-  void run(
-    CustomLintResolver resolver,
-    DiagnosticReporter reporter,
-    CustomLintContext context,
-  ) {
-    final segments = libSegments(resolver);
-    if (segments == null || !isRepoFile(segments)) return;
+  LintCode get diagnosticCode => code;
 
+  @override
+  void registerNodeProcessors(
+    RuleVisitorRegistry registry,
+    RuleContext context,
+  ) {
+    final visitor = _Visitor(this, context);
     // `Model.fromJson(x)` resolves to an InstanceCreationExpression for a
     // factory/named constructor, or a MethodInvocation for a static method.
-    context.registry.addMethodInvocation((node) {
-      if (_parsers.contains(node.methodName.name)) {
-        reporter.atNode(node, _code);
-      }
-    });
-    context.registry.addInstanceCreationExpression((node) {
-      if (_parsers.contains(node.constructorName.name?.name)) {
-        reporter.atNode(node, _code);
-      }
-    });
-    // Tear-offs: `.map(Model.fromJson)`.
-    context.registry.addConstructorReference((node) {
-      if (_parsers.contains(node.constructorName.name?.name)) {
-        reporter.atNode(node, _code);
-      }
-    });
-    context.registry.addPrefixedIdentifier((node) {
-      if (_parsers.contains(node.identifier.name) &&
-          node.parent is! MethodInvocation) {
-        reporter.atNode(node, _code);
-      }
-    });
+    registry
+      ..addMethodInvocation(this, visitor)
+      ..addInstanceCreationExpression(this, visitor)
+      ..addConstructorReference(this, visitor)
+      ..addPrefixedIdentifier(this, visitor);
   }
 
   static bool isRepoFile(List<String> segments) {
@@ -66,5 +54,38 @@ class RepoTransportOnly extends DartLintRule {
         segments.contains('repository') ||
         file.endsWith('_repo.dart') ||
         file.endsWith('_repository.dart');
+  }
+}
+
+class _Visitor extends SimpleAstVisitor<void> {
+  _Visitor(this.rule, this.context);
+
+  final AnalysisRule rule;
+  final RuleContext context;
+
+  void _check(String? name, AstNode node) {
+    if (!RepoTransportOnly._parsers.contains(name)) return;
+    final segments = libSegments(context);
+    if (segments == null || !RepoTransportOnly.isRepoFile(segments)) return;
+    rule.reportAtNode(node);
+  }
+
+  @override
+  void visitMethodInvocation(MethodInvocation node) =>
+      _check(node.methodName.name, node);
+
+  @override
+  void visitInstanceCreationExpression(InstanceCreationExpression node) =>
+      _check(node.constructorName.name?.name, node);
+
+  /// Tear-offs: `.map(Model.fromJson)`.
+  @override
+  void visitConstructorReference(ConstructorReference node) =>
+      _check(node.constructorName.name?.name, node);
+
+  @override
+  void visitPrefixedIdentifier(PrefixedIdentifier node) {
+    if (node.parent is MethodInvocation) return;
+    _check(node.identifier.name, node);
   }
 }

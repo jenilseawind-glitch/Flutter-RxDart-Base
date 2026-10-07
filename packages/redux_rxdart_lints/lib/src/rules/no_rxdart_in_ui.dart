@@ -1,7 +1,9 @@
+import 'package:analyzer/analysis_rule/analysis_rule.dart';
+import 'package:analyzer/analysis_rule/rule_context.dart';
+import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/error/error.dart' show DiagnosticSeverity;
-import 'package:analyzer/error/listener.dart' show DiagnosticReporter;
-import 'package:custom_lint_builder/custom_lint_builder.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/error/error.dart';
 
 import '../lib_path.dart';
 
@@ -14,35 +16,34 @@ import '../lib_path.dart';
 ///   `utils/widgets/view/<component>/bloc/` BLoCs),
 /// - `redux/`, `networking/` and `services/`,
 /// - `utils/` helpers, except `utils/widgets/` (which is UI).
-class NoRxdartInUi extends DartLintRule {
-  NoRxdartInUi() : super(code: _code);
+class NoRxdartInUi extends AnalysisRule {
+  NoRxdartInUi()
+      : super(
+          name: 'no_rxdart_in_ui',
+          description: 'Only BLoCs and non-UI layers import RxDart.',
+        );
 
-  static const _code = LintCode(
-    name: 'no_rxdart_in_ui',
-    problemMessage:
-        'RxDart must not be imported outside bloc/ files. UI widgets consume '
+  static const LintCode code = LintCode(
+    'no_rxdart_in_ui',
+    'RxDart must not be imported outside bloc/ files. UI widgets consume '
         'Stream<T> / ApiResponse<T> only (AGENTS.md Golden Rule #4).',
-    errorSeverity: DiagnosticSeverity.ERROR,
+    severity: DiagnosticSeverity.ERROR,
   );
 
   static const _nonUiRoots = {'redux', 'networking', 'services'};
 
   @override
-  void run(
-    CustomLintResolver resolver,
-    DiagnosticReporter reporter,
-    CustomLintContext context,
+  LintCode get diagnosticCode => code;
+
+  @override
+  void registerNodeProcessors(
+    RuleVisitorRegistry registry,
+    RuleContext context,
   ) {
-    final segments = libSegments(resolver);
-    if (segments == null || isAllowed(segments)) return;
-
-    void check(NamespaceDirective node) {
-      final uri = node.uri.stringValue ?? '';
-      if (uri.startsWith('package:rxdart/')) reporter.atNode(node, _code);
-    }
-
-    context.registry.addImportDirective(check);
-    context.registry.addExportDirective(check);
+    final visitor = _Visitor(this, context);
+    registry
+      ..addImportDirective(this, visitor)
+      ..addExportDirective(this, visitor);
   }
 
   /// Visible for the rule's own reasoning; [segments] is lib-relative.
@@ -56,4 +57,25 @@ class NoRxdartInUi extends DartLintRule {
     }
     return false;
   }
+}
+
+class _Visitor extends SimpleAstVisitor<void> {
+  _Visitor(this.rule, this.context);
+
+  final AnalysisRule rule;
+  final RuleContext context;
+
+  void _check(NamespaceDirective node) {
+    final uri = node.uri.stringValue ?? '';
+    if (!uri.startsWith('package:rxdart/')) return;
+    final segments = libSegments(context);
+    if (segments == null || NoRxdartInUi.isAllowed(segments)) return;
+    rule.reportAtNode(node);
+  }
+
+  @override
+  void visitImportDirective(ImportDirective node) => _check(node);
+
+  @override
+  void visitExportDirective(ExportDirective node) => _check(node);
 }
