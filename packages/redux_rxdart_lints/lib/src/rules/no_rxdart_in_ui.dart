@@ -18,10 +18,10 @@ import '../lib_path.dart';
 /// - `utils/` helpers, except `utils/widgets/` (which is UI).
 class NoRxdartInUi extends AnalysisRule {
   NoRxdartInUi()
-      : super(
-          name: 'no_rxdart_in_ui',
-          description: 'Only BLoCs and non-UI layers import RxDart.',
-        );
+    : super(
+        name: 'no_rxdart_in_ui',
+        description: 'Only BLoCs and non-UI layers import RxDart.',
+      );
 
   static const LintCode code = LintCode(
     'no_rxdart_in_ui',

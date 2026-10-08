@@ -12,11 +12,10 @@ import '../lib_path.dart';
 /// (or let `AppResponseBuilder` do it).
 class NoExceptionToString extends AnalysisRule {
   NoExceptionToString()
-      : super(
-          name: 'no_exception_tostring',
-          description:
-              'UI shows errors with userFacingMessage, never toString.',
-        );
+    : super(
+        name: 'no_exception_tostring',
+        description: 'UI shows errors with userFacingMessage, never toString.',
+      );
 
   static const LintCode code = LintCode(
     'no_exception_tostring',

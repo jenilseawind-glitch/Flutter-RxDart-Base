@@ -64,8 +64,13 @@ Future<void> main(List<String> args) async {
 }
 
 /// Returns true when FVM manages this project's SDK.
-bool _useFvm() =>
-    Directory('.fvm').existsSync() || File('.fvmrc').existsSync();
+bool _useFvm() {
+  if (Platform.environment['CI'] == 'true' ||
+      Platform.environment['GITHUB_ACTIONS'] == 'true') {
+    return false;
+  }
+  return Directory('.fvm').existsSync() || File('.fvmrc').existsSync();
+}
 
 /// Runs a `dart` or `flutter` command through FVM when applicable.
 Future<ProcessResult> _run(bool fvm, String exe, List<String> args) {

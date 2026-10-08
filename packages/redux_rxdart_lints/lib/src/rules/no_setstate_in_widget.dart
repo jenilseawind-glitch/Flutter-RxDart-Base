@@ -16,10 +16,10 @@ import '../lib_path.dart';
 /// visual state (focus, obscured text) that never touches business logic.
 class NoSetStateInWidget extends AnalysisRule {
   NoSetStateInWidget()
-      : super(
-          name: 'no_setstate_in_widget',
-          description: 'Feature widgets follow BLoC streams, not setState.',
-        );
+    : super(
+        name: 'no_setstate_in_widget',
+        description: 'Feature widgets follow BLoC streams, not setState.',
+      );
 
   static const LintCode code = LintCode(
     'no_setstate_in_widget',
@@ -61,7 +61,7 @@ class _Visitor extends SimpleAstVisitor<void> {
     final owner = element?.enclosingElement;
     final fromFlutter =
         element?.library?.uri.toString().startsWith('package:flutter/') ??
-            false;
+        false;
     if (owner?.name != 'State' || !fromFlutter) return;
     if (NoSetStateInWidget.isExempt(libSegments(context))) return;
     rule.reportAtNode(node);

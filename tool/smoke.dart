@@ -8,7 +8,21 @@ final _gitPluginPattern = RegExp(
   r'plugins:\s+redux_rxdart_lints:\s+git:\s+url:\s+https://github\.com/[\w.-]+/Flutter-RxDart-Base\.git\s+path:\s+packages/redux_rxdart_lints\s+ref:\s+\w+',
 );
 
-bool _useFvm() => Directory('.fvm').existsSync() || File('.fvmrc').existsSync();
+bool _useFvm() {
+  if (Platform.environment['CI'] == 'true' ||
+      Platform.environment['GITHUB_ACTIONS'] == 'true') {
+    return false;
+  }
+  if (!Directory('.fvm').existsSync() && !File('.fvmrc').existsSync()) {
+    return false;
+  }
+  final check = Process.runSync(
+    Platform.isWindows ? 'where' : 'which',
+    ['fvm'],
+    runInShell: true,
+  );
+  return check.exitCode == 0;
+}
 
 class _SmokeFailure implements Exception {
   _SmokeFailure(this.message);

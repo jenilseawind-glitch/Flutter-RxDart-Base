@@ -11,10 +11,10 @@ import 'package:analyzer/error/error.dart';
 /// rotation, split-screen or tablet resize. Make the widget public instead.
 class NoScreenutilInPrivateWidget extends AnalysisRule {
   NoScreenutilInPrivateWidget()
-      : super(
-          name: 'no_screenutil_in_private_widget',
-          description: 'ScreenUtil sizes are used only in public widgets.',
-        );
+    : super(
+        name: 'no_screenutil_in_private_widget',
+        description: 'ScreenUtil sizes are used only in public widgets.',
+      );
 
   static const LintCode code = LintCode(
     'no_screenutil_in_private_widget',

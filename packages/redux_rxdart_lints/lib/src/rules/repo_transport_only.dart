@@ -16,10 +16,10 @@ import '../lib_path.dart';
 /// Flags calls *and* tear-offs of `fromJson` / `fromMap`.
 class RepoTransportOnly extends AnalysisRule {
   RepoTransportOnly()
-      : super(
-          name: 'repo_transport_only',
-          description: 'Repositories return raw maps; BLoCs parse models.',
-        );
+    : super(
+        name: 'repo_transport_only',
+        description: 'Repositories return raw maps; BLoCs parse models.',
+      );
 
   static const LintCode code = LintCode(
     'repo_transport_only',
