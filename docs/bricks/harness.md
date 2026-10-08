@@ -7,7 +7,7 @@ mason make harness --project_name my_app \
   --android_package_name com.acme.my_app --ios_bundle_id com.acme.my-app
 ```
 
-The brick has no hooks and does not edit `pubspec.yaml`. `project` adds `custom_lint` and `redux_rxdart_lints`; on an existing project, add them yourself (see [`redux_rxdart_lints`](../packages/redux_rxdart_lints.md)).
+The brick has no hooks and does not edit `pubspec.yaml`. `project` adds the `redux_rxdart_lints` analyzer plugin in `analysis_options.yaml`; on an existing project, add it yourself (see [`redux_rxdart_lints`](../packages/redux_rxdart_lints.md)).
 
 ---
 
@@ -18,7 +18,7 @@ The brick has no hooks and does not edit `pubspec.yaml`. `project` adds `custom_
 | `AGENTS.md` | The rulebook every agent reads: architecture, 13 golden rules (🔒 = enforced by lints), skill index, tooling, memory. Everything below the `harness:project-rules` marker is yours. |
 | `CLAUDE.md` | Claude Code's entry: imports `AGENTS.md`, adds the app ids, loads `.harness/active-context.md`. |
 | `.agents/skills/` | Eight skills, one per kind of work (table below). Claude Code reads the entry points in `.claude/skills/`. |
-| `scripts/agent/verify.dart` | The quality gate: format → analyze → architecture lints → tests → lessons → snapshot (`--fast` = format + analyze). |
+| `scripts/agent/verify.dart` | The quality gate: format → analyze (including architecture lints) → tests → lessons → snapshot (`--fast` = format + analyze). |
 | `scripts/agent/wire_route.dart` | Scaffolds a feature with `mason make bloc` if missing, then adds its route. |
 | `scripts/agent/learn.dart` | The lessons loop (below). |
 | `scripts/agent/upgrade.dart` | Upgrades the harness without touching your work (below). |

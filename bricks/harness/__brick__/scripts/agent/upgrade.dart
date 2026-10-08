@@ -1005,7 +1005,25 @@ Future<String?> _latestUpstreamVersion(String repo) async {
   }
 
   try {
-    final r = await Process.run('git', ['ls-remote', '--tags', repo]);
+    final r = await Process.run(
+      'git',
+      [
+        '-c',
+        'credential.helper=',
+        '-c',
+        'core.askPass=',
+        'ls-remote',
+        '--tags',
+        repo,
+      ],
+      environment: const {
+        'GIT_TERMINAL_PROMPT': '0',
+        'GCM_INTERACTIVE': 'never',
+      },
+    ).timeout(
+      const Duration(seconds: 10),
+      onTimeout: () => ProcessResult(0, 1, '', 'timeout'),
+    );
     if (r.exitCode != 0) return null;
     final versions =
         RegExp(

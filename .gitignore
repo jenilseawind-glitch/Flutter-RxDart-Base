@@ -43,3 +43,5 @@ temp_learn_test/
 # Track template .env asset
 !bricks/project/__brick__/.env
 
+# FVM Version Cache
+.fvm/

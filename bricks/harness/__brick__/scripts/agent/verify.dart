@@ -29,9 +29,8 @@ Future<void> main(List<String> args) async {
       '--set-exit-if-changed',
       ...sources,
     ]),
+    // Also runs the redux_rxdart_lints analyzer plugin (analysis_options.yaml).
     const _Step('Analyzer', 'flutter', ['analyze', '--fatal-infos']),
-    if (!fast)
-      const _Step('Architecture lints', 'dart', ['run', 'custom_lint']),
     if (!fast && Directory('test').existsSync())
       const _Step('Tests', 'flutter', ['test', '--reporter', 'failures-only']),
     if (!fast && File('scripts/agent/learn.dart').existsSync())

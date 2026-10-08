@@ -49,7 +49,7 @@ dart run tool/version_gate.dart origin/main
 dart format --set-exit-if-changed tool bricks/project/hooks bricks/bloc/hooks
 dart analyze --fatal-infos tool bricks/project/hooks bricks/bloc/hooks
 dart analyze --fatal-infos packages/redux_rxdart_lints
-(cd packages/redux_rxdart_lints/example && flutter pub get && dart run custom_lint)
+(cd packages/redux_rxdart_lints && dart run tool/check_fixture.dart)
 dart run tool/smoke.dart                     # full generation, ~5 min
 ```
 Harness scripts (`scripts/agent/*.dart`) are not in the workspace analysis. Check them inside a generated app, which `tool/smoke.dart` does.

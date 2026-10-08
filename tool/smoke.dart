@@ -1,14 +1,14 @@
-import 'package:path/path.dart' as p;
 import 'dart:io';
+
+import 'package:path/path.dart' as p;
 
 import 'harness_recipes.dart';
 
-/// Matches the git dependency on the lints package in a pubspec, regardless
-/// of which GitHub org the repository lives under.
-final _lintsGitDep = RegExp(
-    r'git:\s+url:\s+https://github\.com/[\w.-]+/Flutter-RxDart-Base\.git\s+path:\s+packages/redux_rxdart_lints');
+final _gitPluginPattern = RegExp(
+  r'plugins:\s+redux_rxdart_lints:\s+git:\s+url:\s+https://github\.com/[\w.-]+/Flutter-RxDart-Base\.git\s+path:\s+packages/redux_rxdart_lints\s+ref:\s+\w+',
+);
 
-const _lintsLocalDep = 'path: ../packages/redux_rxdart_lints';
+bool _useFvm() => Directory('.fvm').existsSync() || File('.fvmrc').existsSync();
 
 class _SmokeFailure implements Exception {
   _SmokeFailure(this.message);
@@ -27,9 +27,19 @@ Future<ProcessResult> _run(
   Duration timeout = const Duration(minutes: 15),
 }) async {
   print('$description...');
+  final useFvm = _useFvm();
+  final String exe;
+  final List<String> cmdArgs;
+  if (useFvm && (executable == 'flutter' || executable == 'dart')) {
+    exe = 'fvm';
+    cmdArgs = [executable, ...args];
+  } else {
+    exe = executable;
+    cmdArgs = args;
+  }
   final result = await Process.run(
-    executable,
-    args,
+    exe,
+    cmdArgs,
     workingDirectory: workingDirectory,
     runInShell: true,
   ).timeout(timeout, onTimeout: () {
@@ -42,24 +52,14 @@ Future<ProcessResult> _run(
   return result;
 }
 
-String _useLocalLints(String pubspec, String where) {
-  if (!_lintsGitDep.hasMatch(pubspec)) {
-    throw _SmokeFailure(
-        'Could not find the redux_rxdart_lints git dependency in $where; '
-        'the smoke test would otherwise validate GitHub main instead of '
-        'this checkout.');
-  }
-  return pubspec.replaceFirst(_lintsGitDep, _lintsLocalDep);
-}
-
 Future<void> main() async {
   print('--- Starting cross-platform smoke test ---');
+  if (_useFvm()) {
+    print('FVM detected — using `fvm dart` / `fvm flutter` for testing.');
+  }
 
   final rootDir = Directory.current.path;
   final tempDir = Directory(p.join(rootDir, 'temp_smoke_test'));
-  final templatePubspec =
-      File(p.join(rootDir, 'bricks', 'project', '__brick__', 'pubspec.yaml'));
-  final backupPubspecContent = templatePubspec.readAsStringSync();
 
   try {
     await _run('Activating mason_cli', 'dart',
@@ -70,13 +70,14 @@ Future<void> main() async {
       tempDir.deleteSync(recursive: true);
     }
 
-    // Point the template at the local lints package so the PR under test is
-    // what gets validated.
-    templatePubspec.writeAsStringSync(
-        _useLocalLints(backupPubspecContent, 'the project brick pubspec'));
-
     await _run(
         'Creating fresh Flutter app', 'flutter', ['create', 'temp_smoke_test']);
+
+    if (_useFvm() && File(p.join(rootDir, '.fvmrc')).existsSync()) {
+      File(p.join(tempDir.path, '.fvmrc')).writeAsStringSync(
+        File(p.join(rootDir, '.fvmrc')).readAsStringSync(),
+      );
+    }
 
     await _run('Running mason make project', 'mason', [
       'make',
@@ -97,15 +98,29 @@ Future<void> main() async {
       'temp_smoke_test'
     ]);
 
-    final generatedPubspec = File(p.join(tempDir.path, 'pubspec.yaml'));
-    final generated = generatedPubspec.readAsStringSync();
-    if (_lintsGitDep.hasMatch(generated)) {
-      generatedPubspec.writeAsStringSync(
-          _useLocalLints(generated, 'the generated pubspec'));
-    } else if (!generated.contains(_lintsLocalDep)) {
-      throw _SmokeFailure(
-          'Generated pubspec does not reference redux_rxdart_lints.');
+    // Point the generated app's analysis_options.yaml at the local lints
+    // package with an absolute path so the branch under test is validated
+    // (a git ref: main would fetch the old version before merge).
+    final generatedOptions =
+        File(p.join(tempDir.path, 'analysis_options.yaml'));
+    if (!generatedOptions.existsSync()) {
+      throw _SmokeFailure('Generated analysis_options.yaml not found.');
     }
+    final optionsContent = generatedOptions.readAsStringSync();
+    final localPackagePath =
+        p.join(rootDir, 'packages', 'redux_rxdart_lints').replaceAll(r'\', '/');
+    if (!_gitPluginPattern.hasMatch(optionsContent)) {
+      throw _SmokeFailure(
+        'Could not find the redux_rxdart_lints git plugin in generated '
+        'analysis_options.yaml; the smoke test would otherwise validate '
+        'GitHub main instead of this checkout.',
+      );
+    }
+    final localPluginYaml =
+        'plugins:\n  redux_rxdart_lints:\n    path: $localPackagePath';
+    generatedOptions.writeAsStringSync(
+      optionsContent.replaceFirst(_gitPluginPattern, localPluginYaml),
+    );
 
     await _run(
       'Running mason make bloc',
@@ -126,7 +141,8 @@ Future<void> main() async {
         workingDirectory: tempDir.path);
 
     // The harness skills' code must keep compiling, passing the lints and
-    // behaving as documented: analyze, test and custom_lint below cover it.
+    // behaving as documented: analyze (which runs the analyzer plugin) and test
+    // below cover it.
     print('Pasting the harness BLoC recipes into the app...');
     pasteRecipes(tempDir.path, 'temp_smoke_test');
     await _run(
@@ -147,20 +163,6 @@ Future<void> main() async {
     final testLines = (testRes.stdout as String).trim().split('\n');
     print('  ${testLines.last.trim()}');
 
-    print('Running custom_lint...');
-    final lintRes = await Process.run('dart', ['run', 'custom_lint'],
-        workingDirectory: tempDir.path, runInShell: true);
-    if (lintRes.exitCode != 0) {
-      final combined = '${lintRes.stdout}\n${lintRes.stderr}';
-      // Upstream custom_lint cannot handle spaces in parent directories.
-      if (tempDir.path.contains(' ') && combined.contains('%20')) {
-        print('Notice: skipping custom_lint failure caused by the upstream '
-            'URI-encoding issue with spaces in the checkout path.');
-      } else {
-        throw _SmokeFailure('custom_lint failed.\n$combined');
-      }
-    }
-
     await _run('Checking the harness lessons store', 'dart',
         ['run', 'scripts/agent/learn.dart', 'check'],
         workingDirectory: tempDir.path);
@@ -170,8 +172,6 @@ Future<void> main() async {
     stderr.writeln('Smoke test failed: $e');
     exitCode = 1;
   } finally {
-    // Always restore the template and remove the scratch app.
-    templatePubspec.writeAsStringSync(backupPubspecContent);
     if (tempDir.existsSync()) {
       tempDir.deleteSync(recursive: true);
     }

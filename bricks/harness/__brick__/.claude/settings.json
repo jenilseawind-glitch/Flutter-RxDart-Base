@@ -13,8 +13,6 @@
       "Bash(fvm flutter test:*)",
       "Bash(flutter pub get)",
       "Bash(fvm flutter pub get)",
-      "Bash(dart run custom_lint)",
-      "Bash(fvm dart run custom_lint)",
       "Bash(dart run scripts/agent/verify.dart:*)",
       "Bash(fvm dart run scripts/agent/verify.dart:*)",
       "Bash(dart run scripts/agent/snapshot.dart)",

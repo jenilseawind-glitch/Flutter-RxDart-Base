@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0
+
+- Ported from `custom_lint` to the native Dart analyzer plugin framework (`analysis_server_plugin ^0.3.24` / `analyzer ^14.5.0` on Dart ^3.11).
+- Runs directly via `dart analyze`, `flutter analyze`, and IDE analysis servers through top-level `plugins:` in `analysis_options.yaml`.
+- Removed pubspec dependency requirement on `custom_lint` and `redux_rxdart_lints`.
+- Added `tool/check_fixture.dart` to test example fixture diagnostics against the native plugin.
+
 ## 0.3.0
 
 - Added `no_exception_tostring` rule enforcing Golden Rule #2: Widgets must show errors with `error.userFacingMessage(context)` instead of displaying `e.toString()`.

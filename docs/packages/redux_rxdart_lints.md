@@ -1,8 +1,9 @@
 # redux_rxdart_lints
 
-`custom_lint` plugin enforcing the Redux+RxDart+Dio architecture golden rules
-documented in the harness's `AGENTS.md`, at `dart analyze` time instead of
-relying on an AI agent (or human) remembering them.
+Dart analyzer plugin (`analysis_server_plugin`) enforcing the Redux+RxDart+Dio
+architecture golden rules documented in the harness's `AGENTS.md`, at
+`dart analyze` / `flutter analyze` time instead of relying on an AI agent (or
+human) remembering them.
 
 ## Rules
 
@@ -15,44 +16,50 @@ on where the project is checked out.
 | `no_setstate_in_widget` | #3 Zero setState | calls that resolve to Flutter's `State.setState`. Design-system primitives in `lib/utils/widgets/ui/` are exempt (purely visual state) |
 | `no_screenutil_in_private_widget` | #13 ScreenUtil only in public widgets | `flutter_screenutil` extensions (`.w .h .r .sp ...`, resolved to the package — your own `.w` extension is ignored) inside a private (`_Foo`) widget of any kind, or the `State` of one. ScreenUtil 5.9.x does not rebuild private widgets on resize |
 | `repo_transport_only` | #1 Repository is Transport ONLY | `fromJson` / `fromMap` calls **and tear-offs** (`.map(Model.fromJson)`) in a repository: files under `repo/` or `repository/`, or named `*_repo.dart` / `*_repository.dart` |
+| `no_exception_tostring` | #2 BLoC owns errors, UI shows `userFacingMessage` | `toString()` on an error variable (`e`, `err`, `error`, `exception`) in UI code; BLoCs, repos, `networking/`, `redux/` and `services/` are exempt |
 
 ## Testing
 
 `example/` is a fixture Flutter project. Lines that must be flagged carry
-`// expect_lint: <rule>`; every other line must stay clean, and
-`custom_lint` fails on a missing *or* an unexpected lint:
+`// expect_lint: <rule>` on the line above; every other line must stay clean.
+From this package's root:
 
 ```bash
-cd example
-flutter pub get
-dart run custom_lint
+dart run tool/check_fixture.dart
 ```
 
-CI runs this on every push. Add a positive and a negative case to the
-fixture with every rule change.
+It adds this package to `example/analysis_options.yaml` with an absolute path
+while it runs, analyzes the fixture and fails on a missing *or* an unexpected
+diagnostic. CI runs it on every push. Add a positive and a negative case to
+the fixture with every rule change.
 
 ## Usage
 
-In the consuming Flutter project's `pubspec.yaml`:
+Nothing goes in `pubspec.yaml`. In the consuming project's
+`analysis_options.yaml`, add a **top-level** `plugins:` block (not under
+`analyzer:`):
 
 ```yaml
-dev_dependencies:
-  custom_lint: ^0.8.1
+plugins:
   redux_rxdart_lints:
     git:
       url: https://github.com/jenilseawind-glitch/Flutter-RxDart-Base.git
       path: packages/redux_rxdart_lints
+      ref: main
 ```
 
-In `analysis_options.yaml`:
+The analysis server resolves the plugin itself, so `flutter analyze`,
+`dart analyze`, the IDE, the Dart MCP server's `analyze_files` and the
+harness's `scripts/agent/verify.dart` all report the rules. Restart the
+analysis server after changing the block.
 
-```yaml
-analyzer:
-  plugins:
-    - custom_lint
-```
-
-Then `flutter pub get`. Findings appear in the IDE through the analysis
-server. On the command line, run `dart run custom_lint` (plain
-`flutter analyze` does **not** run custom_lint plugins); the harness's
-`scripts/agent/verify.sh` / `verify.ps1` already do.
+- **SDK**: the plugin needs Dart 3.11+. A `git:` source needs Dart 3.13+
+  (Flutter 3.47+); older analysis servers skip it **silently** (no rule runs,
+  no warning). On Dart 3.11–3.12 use a `path:` source.
+- **Local checkout**: `path: <absolute path>/packages/redux_rxdart_lints`. The
+  path must be absolute; a relative one is not picked up.
+- **Updates**: the server pins `ref: main` to a commit the first time it
+  resolves the plugin (`resolved-ref` in its cache). To pick up newer rules,
+  delete the analysis server's plugin cache (`.dartServer/.plugin_manager` in
+  your home or `%LOCALAPPDATA%` folder) and restart it, or pin a commit with
+  `ref:`.

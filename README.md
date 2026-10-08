@@ -36,10 +36,10 @@ dart run scripts/agent/verify.dart
 
 | | Version | How you use it | What it gives you |
 |---|---|---|---|
-| [`project`](docs/bricks/project.md) | `1.4.1` | `mason make project`, once | Redux session store, Dio client with 5 interceptors, typed errors, router, design tokens, UI kit, l10n (en, hi), showcase screen |
+| [`project`](docs/bricks/project.md) | `1.5.0` | `mason make project`, once | Redux session store, Dio client with 5 interceptors, typed errors, router, design tokens, UI kit, l10n (en, hi), showcase screen |
 | [`bloc`](docs/bricks/bloc.md) | `1.2.1` | `mason make bloc`, once per screen | BLoC, repo, model, page, content widget and 7 passing BLoC tests |
-| [`harness`](docs/bricks/harness.md) | `1.7.4` | installed by `project` | `AGENTS.md`, eight agent skills, the quality gate, a lessons loop, a safe upgrade tool |
-| [`redux_rxdart_lints`](docs/packages/redux_rxdart_lints.md) | `0.3.0` | wired in by `project` | Turns five golden rules into analyzer errors |
+| [`harness`](docs/bricks/harness.md) | `1.8.0` | installed by `project` | `AGENTS.md`, eight agent skills, the quality gate, a lessons loop, a safe upgrade tool |
+| [`redux_rxdart_lints`](docs/packages/redux_rxdart_lints.md) | `0.4.0` | wired in by `project` | Turns five golden rules into analyzer errors |
 
 ---
 

@@ -81,10 +81,8 @@ jobs:
       # Fixture project: every rule has expect_lint positives and clean
       # negatives. Fails on a missing or an unexpected lint.
       - name: Rule fixtures
-        working-directory: packages/redux_rxdart_lints/example
-        run: |
-          flutter pub get
-          dart run custom_lint
+        working-directory: packages/redux_rxdart_lints
+        run: dart run tool/check_fixture.dart
 
   workspace-checks:
     name: Workspace format & analyze (tool, hooks)

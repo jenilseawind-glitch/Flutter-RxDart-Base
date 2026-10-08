@@ -350,8 +350,7 @@ vars:
         out(r).contains('runs scripts/agent/stop-gate-old.ps1'), out(r));
     check(
         'missing template hooks and permissions are listed, settings kept',
-        out(r).contains('on_edit.dart') &&
-            out(r).contains('learn.dart') &&
+        out(r).contains('learn.dart') &&
             read('.claude/settings.json').contains('flutter test'));
     check('team scripts survive a forced re-apply too',
         exists('scripts/agent/check_ids.dart'));

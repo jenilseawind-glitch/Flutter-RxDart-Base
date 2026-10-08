@@ -51,7 +51,7 @@ analyzer-enforced.
 ## 5. Verify before committing
 
 - **Docs & Link Integrity**: Run `dart run tool/docs_check.dart` from the repository root. Validates that all relative links and cross-references in `README.md`, `docs/`, and brick documentation resolve to real files.
-- **Full E2E Smoke Test**: Run `dart run tool/smoke.dart` from the repository root. Exercises the full end-to-end flow: `flutter create` -> `mason make project` -> `mason make bloc` -> `dart format` -> `flutter analyze` -> `flutter test` -> `custom_lint`.
+- **Full E2E Smoke Test**: Run `dart run tool/smoke.dart` from the repository root. Exercises the full end-to-end flow: `flutter create` -> `mason make project` -> `mason make bloc` -> `dart format` -> `flutter analyze` -> `flutter test`.
 - **Linter Package Analysis**: Run `dart analyze --fatal-infos` inside `packages/redux_rxdart_lints/`.
 - **Formatting & Analysis**: Run `dart format --set-exit-if-changed .` and `dart analyze` across all touched packages and hook directories (`bricks/*/hooks/`).
 - **Harness checks**: `dart run tool/harness_check.dart` (docs name only generated paths, types
@@ -71,7 +71,7 @@ Agents follow them literally, so:
   `tool/harness_check.dart` enforces it. Cite golden rules by number instead of restating them.
 - **Code that compiles and behaves.** `tool/smoke.dart` pastes every code block of
   `manage-state/bloc-recipes.md` verbatim into the generated app (`tool/harness_recipes.dart`,
-  scaffolding in `tool/recipe_fixture/`), so `flutter analyze`, `custom_lint` and
+  scaffolding in `tool/recipe_fixture/`), so `flutter analyze` (which runs the lint plugin) and
   `tool/recipe_fixture/test/recipes_test.dart` fail CI when a recipe stops compiling, breaks a golden
   rule or stops doing what the skill says. Adding or reordering a block means updating the fixture
   markers. Snippets in other skills (for example `redux-changes.md`) are checked by hand in a
@@ -98,16 +98,16 @@ don't guess.
 ### Temporary exception: fork URLs until upstream merges
 
 Development currently happens in the fork `jenilseawind-glitch/Flutter-RxDart-Base`, which is
-ahead of upstream (fork: project 1.4.1, bloc 1.2.1, harness 1.7.4, `redux_rxdart_lints` 0.3.0 on
-analyzer 8; upstream: project 1.1.0, bloc 1.0.0, harness 1.4.1). Upstream `main` still ships `redux_rxdart_lints` 0.1.0 on analyzer 7 /
-`custom_lint_builder ^0.7`, which conflicts with the template's `custom_lint ^0.8.1` and crashes
+ahead of upstream (fork: project 1.5.0, bloc 1.2.1, harness 1.8.0, `redux_rxdart_lints` 0.4.0 as a native
+analyzer plugin; upstream: project 1.1.0, bloc 1.0.0, harness 1.4.1). Upstream `main` still ships `redux_rxdart_lints` 0.1.0 on analyzer 7 /
+`custom_lint_builder ^0.7`, which conflicts with the template and crashes
 on Flutter 3.47. Pointing generated apps at upstream today would break `flutter pub get` in
 every new project, so these **functional** URLs intentionally name the fork:
 
 | File | What depends on it |
 |---|---|
 | `README.md`, `docs/index.md` | Quick Start `mason add -g` commands (upstream's bricks are years behind) |
-| `bricks/project/__brick__/pubspec.yaml` | `redux_rxdart_lints` git dependency of every generated app |
+| `bricks/project/__brick__/analysis_options.yaml` | `redux_rxdart_lints` git plugin of every generated app |
 | `bricks/harness/__brick__/.harness/version.json` | `upstream_repo` used by `upgrade.dart` |
 | `bricks/harness/__brick__/scripts/agent/upgrade.dart` | fallback `upstream` URL (`--check-only`, `mason add` hint) |
 | `packages/redux_rxdart_lints/README.md`, `docs/packages/redux_rxdart_lints.md` | install snippet |

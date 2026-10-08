@@ -21,12 +21,14 @@ Infos fail the gate too. The project enables strict casts, inference and raw typ
 
 The MCP `analyze_files` tool gives the same diagnostics for one file without a full run.
 
-## 3. Architecture lints (`dart run custom_lint`, about 40 s)
+## 3. Architecture lints (reported by the Analyzer step)
+The `redux_rxdart_lints` analyzer plugin (top-level `plugins:` block in `analysis_options.yaml`) reports these through `flutter analyze` and the IDE. After changing that block, restart the analysis server (IDE: "Dart: Restart Analysis Server"). No rule ever shows up at all? The block is missing, or the SDK is older than Dart 3.13, which skips a git plugin source silently.
 Each rule enforces a golden rule from `AGENTS.md` §2:
 
 | Rule | Means | Fix |
 |---|---|---|
 | `repo_transport_only` (rule 1) | `fromJson`/`fromMap` is called or torn off in a repo file | Return the raw map from the repo and parse in the BLoC (`.agents/skills/add-endpoint/SKILL.md` §3–5) |
+| `no_exception_tostring` (rule 2) | `e.toString()` on an error in UI code | Show `error.userFacingMessage(context)`, or let `AppResponseBuilder` render the error |
 | `no_setstate_in_widget` (rule 3) | `setState` in a feature widget | Move the state into the BLoC (a `BehaviorSubject` + a sync getter) and render with `StreamBuilder` / `AppResponseBuilder`. Purely visual state in a `lib/utils/widgets/ui/` primitive is exempt. |
 | `no_rxdart_in_ui` (rule 4) | A widget imports `rxdart` | Expose a plain `Stream<T>` getter from the BLoC, plus a sync getter if the widget needs the current value |
 | `no_screenutil_in_private_widget` (rule 13) | `.w/.h/.r/.sp` in a `_Private` widget | Make the widget public (drop the `_`), or compute the size in a public parent and pass it down |

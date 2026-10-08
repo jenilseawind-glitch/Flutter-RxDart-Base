@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.8.0
+
+- **Native analyzer plugin support**:
+  - `verify.dart`: Removed `dart run custom_lint` step; the Analyzer step (`flutter analyze --fatal-infos`) now executes the native `redux_rxdart_lints` plugin directly.
+  - `.claude/settings.json`: Removed legacy `custom_lint` bash execution permissions.
+  - `upgrade.dart`: Added `GIT_TERMINAL_PROMPT: 0` to `git ls-remote` to prevent terminal hanging on remote inspection.
+  - Skills updated: `fix-bug` (architecture lints reported by Analyzer, added Rule 2 `no_exception_tostring`), `flutter-senior-dev` (architecture and dependencies updated).
+
 ## 1.7.4
 
 - **Compiler-enforced Golden Rules:** Added `no_exception_tostring` custom lint to `redux_rxdart_lints` to statically enforce Rule 2 (never displaying `e.toString()` in UI widgets).

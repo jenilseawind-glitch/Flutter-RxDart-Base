@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.5.0
+
+- **Native analyzer plugin migration**: `redux_rxdart_lints` ported to Dart native analyzer plugin (`analysis_server_plugin`).
+- Removed `custom_lint` and `redux_rxdart_lints` dev dependencies from `pubspec.yaml`.
+- Replaced `analyzer: plugins: - custom_lint` with top-level `plugins: redux_rxdart_lints:` git source in `analysis_options.yaml`.
+- **Migration for existing apps**:
+  1. In `pubspec.yaml`: remove `custom_lint` and `redux_rxdart_lints` from `dev_dependencies`.
+  2. In `analysis_options.yaml`: remove `plugins: - custom_lint` under `analyzer:`. Add a top-level `plugins:` block:
+     ```yaml
+     plugins:
+       redux_rxdart_lints:
+         git:
+           url: https://github.com/jenilseawind-glitch/Flutter-RxDart-Base.git
+           path: packages/redux_rxdart_lints
+           ref: main
+     ```
+  3. Run `dart run scripts/agent/upgrade.dart` to upgrade `verify.dart` and harness settings.
+
 ## 1.4.1
 
 - **Fix: `mason upgrade` / `flutter pub get` failed on Flutter ≤ 3.44.** 1.4.0 required Dart ≥ 3.13 / Flutter ≥ 3.47 because the floors were set to the toolchain it was tested on. Floors are now what the dependencies need: hooks Dart ≥ 3.5 (`mason`), generated app Dart ≥ 3.10 / Flutter ≥ 3.38 (`toastification`, `shared_preferences`). CI now also runs the smoke test on Flutter 3.38.

@@ -7,11 +7,11 @@ This repository is the Mason Workspace source repository providing templates, br
 ```
 .
 ├── bricks/
-│   ├── project/                  # Scaffolds initial Flutter app architecture (v1.4.1)
+│   ├── project/                  # Scaffolds initial Flutter app architecture (v1.5.0)
 │   ├── bloc/                     # Scaffolds feature modules with BLoC and tests (v1.2.1)
-│   └── harness/                  # Scaffolds AI Agent Harness onto apps (v1.7.4)
+│   └── harness/                  # Scaffolds AI Agent Harness onto apps (v1.8.0)
 ├── packages/
-│   └── redux_rxdart_lints/       # Custom lint package enforcing golden rules (v0.3.0)
+│   └── redux_rxdart_lints/       # Custom lint package enforcing golden rules (v0.4.0)
 ├── tool/
 │   ├── smoke.dart                # E2E: create -> project -> bloc -> strict format -> recipes -> analyze -> test -> lint
 │   ├── harness_recipes.dart      # Pastes the harness BLoC recipes (verbatim) into the smoke app; fixture in recipe_fixture/
@@ -39,7 +39,7 @@ Run these commands before committing any changes:
 3. **Linter Package Analysis + Rule Fixtures**:
    ```bash
    dart analyze --fatal-infos packages/redux_rxdart_lints
-   (cd packages/redux_rxdart_lints/example && flutter pub get && dart run custom_lint)
+   (cd packages/redux_rxdart_lints && dart run tool/check_fixture.dart)
    ```
 4. **Workspace Formatting & Code Analysis** (brick templates are excluded; they are checked through the smoke test):
    ```bash

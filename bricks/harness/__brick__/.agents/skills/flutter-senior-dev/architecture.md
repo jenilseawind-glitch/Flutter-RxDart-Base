@@ -91,8 +91,8 @@ Navigator with `onGenerateRoute` (`utils/router/app_router.dart`), constants in 
 - `project`: run once inside a fresh `flutter create` app. `pre_gen` validates names and ids before writing; `post_gen` runs `pub get`, `gen-l10n`, applies the Android package and iOS bundle id, formats, merges `.gitignore`, and installs the harness (`--on-conflict skip`).
 - `bloc`: per feature, from the project root; reads `project_name` from `pubspec.yaml`.
 - `harness`: pure template (no hooks) — `AGENTS.md`, `CLAUDE.md`, `.claude/`, `.agents/skills/` (8 skills), MCP config, `.harness/` (memory + lessons), `scripts/agent/`. `learn.dart` runs the learning loop; `upgrade.dart` replaces only the skills it ships and never `.harness/`.
-- `redux_rxdart_lints` (custom_lint): `repo_transport_only` (rule 1), `no_setstate_in_widget` (3), `no_rxdart_in_ui` (4), `no_screenutil_in_private_widget` (13). Run via `dart run custom_lint` or the IDE; plain `flutter analyze` does not run them, `verify.dart` does.
+- `redux_rxdart_lints` (analyzer plugin, top-level `plugins:` in `analysis_options.yaml`): `repo_transport_only` (rule 1), `no_exception_tostring` (2), `no_setstate_in_widget` (3), `no_rxdart_in_ui` (4), `no_screenutil_in_private_widget` (13). Reported by `flutter analyze`, the IDE and `verify.dart`.
 
 ## 9. Key dependencies
 
-dio, dio_smart_retry, dio_http2_adapter, connectivity_plus, redux, flutter_redux, shared_preferences, (flutter_secure_storage), rxdart, flutter_screenutil, toastification, intl, url_launcher, snug_logger, flutter_dotenv; dev: flutter_lints, custom_lint, redux_rxdart_lints.
+dio, dio_smart_retry, dio_http2_adapter, connectivity_plus, redux, flutter_redux, shared_preferences, (flutter_secure_storage), rxdart, flutter_screenutil, toastification, intl, url_launcher, snug_logger, flutter_dotenv; dev: flutter_lints (the `redux_rxdart_lints` plugin is configured in `analysis_options.yaml`, not `pubspec.yaml`).

@@ -19,14 +19,15 @@ const _strings = {
 
 /// Copies `tool/recipe_fixture/` into the generated app at [appDir] with
 /// the code blocks of the harness's BLoC recipes pasted in **verbatim**, so
-/// the smoke test's analyze, custom_lint and test steps prove the skill's
-/// code still compiles, follows the golden rules and behaves as documented.
+/// the smoke test's analyze (including the lint plugin) and test steps prove
+/// the skill's code still compiles, follows the golden rules and behaves as
+/// documented.
 ///
 /// A `// recipe-block: N` line or a `recipe('N')` expression in a fixture is
 /// replaced by block N (0-based, in document order). Where one block mixes
 /// two kinds of code, `Na` / `Nb` name its parts.
 void pasteRecipes(String appDir, String package) {
-  final doc = File(_recipes).readAsStringSync();
+  final doc = File(_recipes).readAsStringSync().replaceAll('\r\n', '\n');
   final blocks = RegExp(r'```dart\n(.*?)```', dotAll: true)
       .allMatches(doc)
       .map(
@@ -65,6 +66,7 @@ void pasteRecipes(String appDir, String package) {
     if (!rel.endsWith('.dart')) continue;
     final source = file
         .readAsStringSync()
+        .replaceAll('\r\n', '\n')
         .replaceAll('package:recipe_app/', 'package:$package/')
         .replaceAllMapped(
           RegExp(r'^[ \t]*// recipe-block: (\w+)\n', multiLine: true),
