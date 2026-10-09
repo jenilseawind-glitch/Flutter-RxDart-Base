@@ -17,8 +17,8 @@ void main() {
   if (queueFile.existsSync()) {
     try {
       final data = jsonDecode(queueFile.readAsStringSync()) as Map<String, dynamic>;
-      final tasks = (data['tasks'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
-      final sessions = (data['sessions'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+      final tasks = (data['tasks'] as List<dynamic>? ?? <dynamic>[]).cast<Map<String, dynamic>>();
+      final sessions = (data['sessions'] as List<dynamic>? ?? <dynamic>[]).cast<Map<String, dynamic>>();
       activeSessions = sessions.length;
       for (final t in tasks) {
         final status = t['status']?.toString();

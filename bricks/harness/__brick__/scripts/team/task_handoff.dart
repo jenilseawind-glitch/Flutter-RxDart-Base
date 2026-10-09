@@ -7,12 +7,14 @@ import 'dart:io';
 /// in `.harness/tasks/active.json`.
 ///
 /// Usage:
-///   dart run scripts/team/task_handoff.dart list
-///   dart run scripts/team/task_handoff.dart sessions
-///   dart run scripts/team/task_handoff.dart register-session --session "<id>" --agent "<agent>"
-///   dart run scripts/team/task_handoff.dart create --title "<title>" --assignee "<agent>" [--desc "<desc>"] [--session "<id>"]
-///   dart run scripts/team/task_handoff.dart claim --id "<id>" --assignee "<agent>" [--session "<id>"]
-///   dart run scripts/team/task_handoff.dart complete --id "<id>" [--summary "<summary>"] [--session "<id>"]
+/// ```bash
+/// dart run scripts/team/task_handoff.dart list
+/// dart run scripts/team/task_handoff.dart sessions
+/// dart run scripts/team/task_handoff.dart register-session --session "<id>" --agent "<agent>"
+/// dart run scripts/team/task_handoff.dart create --title "<title>" --assignee "<agent>" [--desc "<desc>"] [--session "<id>"]
+/// dart run scripts/team/task_handoff.dart claim --id "<id>" --assignee "<agent>" [--session "<id>"]
+/// dart run scripts/team/task_handoff.dart complete --id "<id>" [--summary "<summary>"] [--session "<id>"]
+/// ```
 void main(List<String> args) {
   if (args.isEmpty) {
     _printUsage();
@@ -23,12 +25,15 @@ void main(List<String> args) {
   final queueFile = File('.harness/tasks/active.json');
   if (!queueFile.existsSync()) {
     queueFile.parent.createSync(recursive: true);
-    _atomicSave(queueFile, {'sessions': [], 'tasks': []});
+    _atomicSave(queueFile, {
+      'sessions': <Map<String, dynamic>>[],
+      'tasks': <Map<String, dynamic>>[],
+    });
   }
 
   final data = _readJsonSafe(queueFile);
-  final tasks = (data['tasks'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
-  final sessions = (data['sessions'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+  final tasks = (data['tasks'] as List<dynamic>? ?? <dynamic>[]).cast<Map<String, dynamic>>();
+  final sessions = (data['sessions'] as List<dynamic>? ?? <dynamic>[]).cast<Map<String, dynamic>>();
 
   switch (command) {
     case 'list':
@@ -144,7 +149,10 @@ Map<String, dynamic> _readJsonSafe(File file) {
   try {
     return jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
   } catch (_) {
-    return {'sessions': [], 'tasks': []};
+    return {
+      'sessions': <Map<String, dynamic>>[],
+      'tasks': <Map<String, dynamic>>[],
+    };
   }
 }
 
