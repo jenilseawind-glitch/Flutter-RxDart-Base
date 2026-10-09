@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1
+
+- **`--check-only` no longer hangs in IDE terminals**: VS Code-based terminals export `GIT_ASKPASS`, which beats `core.askPass=` and made `git ls-remote` wait on a credential prompt for a missing or private upstream. The probe now clears `GIT_ASKPASS` and `SSH_ASKPASS`.
+- **Valid `crossSessionInbound` value**: `.claude/settings.json` shipped `"notify"`, which Claude Code rejects (allowed: `accept`, `hold`, `refuse`) and reports on every start. It is now `"hold"`: messages from other local sessions wait for your approval, as they already did while the value was ignored. Apps keep their own `settings.json` on upgrade, so change the value there by hand.
+- **Upgrade handover runs on the current Dart VM**: `upgrade.dart` now starts the newer engine with `Platform.resolvedExecutable` instead of re-resolving `fvm dart`. In FVM projects the nested `fvm` call could hit a pub-global `fvm.bat` shim whose snapshot was built by another SDK, printing `Can't load Kernel binary: Invalid kernel binary format version` before falling back. The running VM is already the project SDK.
+
 ## 2.0.0
 
 - **Multi-Agent Specialist Swarm & Token Shield Architecture**:

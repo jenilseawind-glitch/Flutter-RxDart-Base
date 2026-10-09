@@ -118,13 +118,14 @@ Future<void> main(List<String> args) async {
         (!mine.existsSync() ||
             mine.readAsStringSync() != theirs.readAsStringSync())) {
       print('Handing over to the $target upgrade engine...');
-      final fvm = _useFvm();
-      final child = await Process.start(
-        fvm ? 'fvm' : 'dart',
-        [if (fvm) 'dart', theirs.path, '--apply', out],
-        mode: ProcessStartMode.inheritStdio,
-        runInShell: true,
-      );
+      // The Dart VM running this script is already the project's SDK (FVM
+      // or not). Re-resolving `fvm` here can hit a pub-global shim whose
+      // snapshot was built by another SDK ("Can't load Kernel binary").
+      final child = await Process.start(Platform.resolvedExecutable, [
+        theirs.path,
+        '--apply',
+        out,
+      ], mode: ProcessStartMode.inheritStdio);
       exitCode = await child.exitCode;
       return;
     }
@@ -133,16 +134,6 @@ Future<void> main(List<String> args) async {
     if (staging.existsSync()) staging.deleteSync(recursive: true);
   }
 }
-
-/// Returns true when FVM manages this project's SDK.
-bool _useFvm() {
-  if (Platform.environment['CI'] == 'true' ||
-      Platform.environment['GITHUB_ACTIONS'] == 'true') {
-    return false;
-  }
-  return Directory('.fvm').existsSync() || File('.fvmrc').existsSync();
-}
-
 
 class _Options {
   _Options(List<String> args) {
@@ -1047,6 +1038,10 @@ Future<String?> _latestUpstreamVersion(String repo) async {
       ],
       environment: const {
         'GIT_TERMINAL_PROMPT': '0',
+        // An IDE terminal (VS Code and forks) exports its own GIT_ASKPASS,
+        // which overrides core.askPass and waits on a GUI credential prompt.
+        'GIT_ASKPASS': '',
+        'SSH_ASKPASS': '',
         'GCM_INTERACTIVE': 'never',
       },
     ).timeout(
