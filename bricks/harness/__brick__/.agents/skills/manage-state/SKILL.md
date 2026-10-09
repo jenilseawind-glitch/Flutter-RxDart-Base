@@ -9,7 +9,7 @@ Two homes, one rule: **session data that must survive a restart goes in Redux; e
 
 ## 0. Load what this project learned
 1. Read `.harness/skills/manage-state.md` if it exists. It wins over this file.
-2. Run `dart run scripts/agent/learn.dart list manage-state`.
+2. Check the Knowledge Graph (`search_nodes` / `read_graph`) or run `dart run scripts/agent/learn.dart list manage-state`.
 
 ## 1. Decide the home
 | The state is... | Home |
@@ -51,5 +51,6 @@ Only for the first row of the table in step 1, or the second once the owner appr
 
 ## 5. Verify and close out
 1. Test the recipe's edge cases (`.agents/skills/write-tests/SKILL.md`): double submit, a stale search result arriving late, load-more failure, no emission after `dispose()`.
-2. Run `dart run scripts/agent/verify.dart`.
-3. Close out per `AGENTS.md` §6, recording what tripped you up with `learn.dart add manage-state ...`.
+2. Run `dart run scripts/agent/on_edit.dart` on touched files for sub-second feedback.
+3. Run `dart run scripts/agent/verify.dart` for the full quality gate.
+4. Close out per `AGENTS.md` §6, recording what tripped you up into the Knowledge Graph (`add_observations`), in `.claude/rules/bloc.md`, or with `learn.dart add manage-state ...`.

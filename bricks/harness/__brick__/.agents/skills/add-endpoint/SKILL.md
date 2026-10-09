@@ -9,7 +9,7 @@ The data path is fixed: `ApiConstants` → repo (transport) → BLoC (parse + st
 
 ## 0. Load what this project learned
 1. Read `.harness/skills/add-endpoint.md` if it exists: backend quirks and conventions already discovered here. It wins over this file.
-2. Run `dart run scripts/agent/learn.dart list add-endpoint`.
+2. Check the Knowledge Graph (`search_nodes` / `read_graph`) or run `dart run scripts/agent/learn.dart list add-endpoint`.
 
 ## 1. Read the contract, don't guess it
 Look for `*.postman_collection.json`, then OpenAPI/Swagger, then docs (`AGENTS.md` §3). Write down the method, path and path params, query params, request body, **one real success response**, and the error shape. No real response → ask for one. Never infer field names or types from the endpoint's name.
@@ -49,6 +49,7 @@ Future<Map<String, dynamic>> fetchOrders({
 - `ApiBaseHelper` methods: `get`, `post`, `put`, `delete`, and `postFormData` / `putFormData` (multipart, with an `onSendProgress` callback). Put `MultipartFile` values in the form map.
 - There is no `patch`. If the backend needs PATCH, add a `patch` method to `ApiBaseHelper` that mirrors `put` exactly. That changes shared networking, so say so in your summary.
 - Let exceptions propagate. The repo never catches.
+- For complete production recipes (CRUD, parameter sanitization, capability mixins, multipart uploads, bulk fetches, binary downloads, cache-aside), see `.agents/skills/add-endpoint/repo-recipes.md`.
 
 ### Repository architecture & capability mixins
 - **One BLoC, one repo**: A BLoC never holds two repository instances (e.g. `_inquiriesRepo` and `_agentsRepo`). That breaks 1:1 cohesion and doubles mock setup in tests.
@@ -200,7 +201,7 @@ Copy the contract's success response into the BLoC test as a `const` map literal
 Use the generated `Fake<Feature>Repo` pattern. Details: `.agents/skills/write-tests/SKILL.md`.
 
 ## 7. Gate and close out
-Run `dart run scripts/agent/verify.dart`, then close out per `AGENTS.md` §6. Record any backend quirk you found (date format, pagination style, an error field name) with `learn.dart add add-endpoint ...`, because the next endpoint on this backend will hit it too.
+Run `dart run scripts/agent/on_edit.dart` on touched files while iterating, then `dart run scripts/agent/verify.dart` for the full gate before closing out per `AGENTS.md` §6. Record any backend quirk you found (date format, pagination style, an error field name) into the Knowledge Graph (`add_observations`), in `.claude/rules/endpoints.md`, or with `learn.dart add add-endpoint ...`, because the next endpoint on this backend will hit it too.
 
 ## Changing an existing endpoint
 Find every caller first. Use the Dart MCP `lsp` references tool instead of regex or `grep` to find every usage of the repo method and the `ApiConstants` getter. Update the model and its tests together. When a field is removed, keep parsing tolerant until the backend change has shipped everywhere.

@@ -9,7 +9,7 @@ Widgets render state; they don't own it. Pages wire a BLoC to the screen, conten
 
 ## 0. Load what this project learned
 1. Read `.harness/skills/build-ui.md` if it exists (design decisions, custom tokens, components added here). It wins over this file.
-2. Run `dart run scripts/agent/learn.dart list build-ui`.
+2. Check the Knowledge Graph (`search_nodes` / `read_graph`) or run `dart run scripts/agent/learn.dart list build-ui`.
 3. Check `lib/utils/widgets/ui/` before building anything: the widget may already exist.
 
 ## 1. Structure
@@ -57,4 +57,4 @@ Widgets render state; they don't own it. Pages wire a BLoC to the screen, conten
 When a debug app is running and the `dart` MCP server is connected: `hot_reload` after edits, `get_runtime_errors` for overflows and exceptions, `widget_inspector` to check the tree. No running app → say the UI was verified by analyzer and tests only.
 
 ## 9. Verify and close out
-Run `dart run scripts/agent/verify.dart` (`--fast` while iterating). Add a widget test for content widgets with conditional UI (`.agents/skills/write-tests/SKILL.md`). Close out per `AGENTS.md` §6. Record design decisions the next UI change must follow (spacing scale, a new token, a component) in `.harness/skills/build-ui.md` once they repeat.
+Run `dart run scripts/agent/on_edit.dart` on touched files for sub-second feedback, then `dart run scripts/agent/verify.dart`. Add a widget test for content widgets with conditional UI (`.agents/skills/write-tests/SKILL.md`). For device flows, run `maestro test .maestro/flows/smoke_launch.yaml`. Close out per `AGENTS.md` §6. Record design decisions the next UI change must follow in `.claude/rules/ui.md` or `.harness/skills/build-ui.md`.

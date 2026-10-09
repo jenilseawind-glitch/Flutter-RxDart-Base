@@ -9,7 +9,7 @@ Find the layer that's wrong, fix it there, prove it with a test, and leave a les
 
 ## 0. Load what this project learned
 1. Read `.harness/skills/fix-bug.md` if it exists: known failure modes in *this* app. It wins over this file.
-2. Run `dart run scripts/agent/learn.dart list fix-bug`. A lesson that matches the symptom is the fastest fix there is.
+2. Check the Knowledge Graph (`search_nodes` / `read_graph`) or run `dart run scripts/agent/learn.dart list fix-bug`. A lesson or observation that matches the symptom is the fastest fix there is.
 
 ## 1. Get the exact failure
 - **Red gate**: run `dart run scripts/agent/verify.dart` and read the first failing step's output. Each step is covered in `.agents/skills/fix-bug/gate-failures.md`.
@@ -42,11 +42,12 @@ None fit → narrow it down by layer: does the raw map (repo) look right? Does t
 
 ## 4. Prove it
 1. The new test fails before the fix and passes after.
-2. `dart run scripts/agent/verify.dart` passes.
-3. Runtime bugs: confirm in the running app (`hot_reload` + `get_runtime_errors`) when one is available. Otherwise say it is verified by tests only.
+2. Fast in-flight check: `dart run scripts/agent/on_edit.dart` on touched files.
+3. Full quality gate: `dart run scripts/agent/verify.dart` passes.
+4. Runtime / device bugs: confirm in the running app (`hot_reload` + `get_runtime_errors`) or via Maestro (`maestro test .maestro/flows/smoke_launch.yaml`).
 
 ## 5. Learn from it (this is what stops repeats)
-Close out per `AGENTS.md` §6, and record the cause, not the symptom:
+Close out per `AGENTS.md` §6, and record the cause, not the symptom. Store persistent findings in the Knowledge Graph (`add_observations`) or path rules (`.claude/rules/`), or use the CLI:
 - `dart run scripts/agent/learn.dart list fix-bug`. Same cause as an existing lesson → `learn.dart hit L<id> --proof commit:<hash>`.
 - New cause → `learn.dart add <skill-that-should-have-prevented-it> "<trigger>: <what to do instead>" --proof <ref>`. Scope it to the skill whose procedure would have avoided the bug (often `add-endpoint` or `manage-state`), not to `fix-bug`.
-- If a harness file (a skill, `AGENTS.md`, a reference) told you something wrong, that's an upstream lesson. Follow `.agents/skills/evolve-harness/SKILL.md` step 3.
+- If a harness file (a skill, `AGENTS.md`, a reference) told you something wrong, that's an upstream lesson. Follow `.agents/skills/evolve-harness/SKILL.md`.

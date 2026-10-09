@@ -38,7 +38,7 @@ dart run scripts/agent/verify.dart
 |---|---|---|---|
 | [`project`](bricks/project.md) | `1.5.0` | `mason make project`, once | Redux session store, Dio client with 5 interceptors, typed errors, router, design tokens, UI kit, l10n (en, hi), showcase screen |
 | [`bloc`](bricks/bloc.md) | `1.2.1` | `mason make bloc`, once per screen | BLoC, repo, model, page, content widget and 7 passing BLoC tests |
-| [`harness`](bricks/harness.md) | `1.8.0` | installed by `project` | `AGENTS.md`, eight agent skills, the quality gate, a lessons loop, a safe upgrade tool |
+| [`harness`](bricks/harness.md) | `2.0.0` | installed by `project` | `AGENTS.md`, Token Shield, path rules, specialist swarm, Maestro testing, quality gates, lessons loop |
 | [`redux_rxdart_lints`](packages/redux_rxdart_lints.md) | `0.4.0` | wired in by `project` | Turns five golden rules into analyzer errors |
 
 ---
@@ -70,14 +70,42 @@ The architecture lints (in the IDE and in `verify.dart`) reject parsing in repos
 
 ---
 
-## Working with AI agents
+## The Opinionated AI Agent Setup (Harness v2.0.0)
 
-With the harness, an agent working in your app:
+This repository couples architecture with a battle-tested **AI Agent Harness** engineered specifically for frontier coding agents (Claude Code, Cursor, Codex, Gemini CLI). It transforms chaotic LLM edits into a deterministic, token-efficient assembly line:
 
-1. **Reads the rules** from `AGENTS.md` (Claude Code through `CLAUDE.md`).
-2. **Picks a skill for the job**: `add-feature`, `add-endpoint`, `manage-state`, `build-ui`, `write-tests`, `fix-bug`, `evolve-harness`, or `flutter-senior-dev` for planning and review.
-3. **Gets feedback while it works**: an edit hook in Claude Code and the Dart MCP server. It must pass `verify.dart` before calling the work done.
-4. **Records lessons** with `learn.dart`, so the next session doesn't repeat a mistake. A lesson seen twice becomes a project rule or skill step.
+### 1. 🛡️ Token Shield & Context Slicing
+- **1-Hour Prompt Caching**: Configured `promptCacheTtl: "1h"` and `subagentPromptCacheTtl: "1h"` in `.claude/settings.json` to leverage Anthropic prompt caching across deep conversations.
+- **Context-Slicing Path Rules (`.claude/rules/`)**: Architecture standards (`bloc.md`, `ui.md`, `endpoints.md`, `testing.md`) cost **0 baseline tokens**. They are injected dynamically by Claude Code and Cursor only when matching paths are edited.
+- **Output Clamping & Deny Boundaries**: Terminal outputs clamped to 4,000 chars (`bashOutputMaxChars: 4000`) preventing token-draining build logs. Deny rules strictly guard keystores, provisioning profiles, `.dart_tool/`, and generated files (`*.g.dart`, `*.freezed.dart`).
+
+### 2. 🐝 Specialist Agent Swarm & Coordination
+Instead of one generalist agent running out of context, tasks multiplex across lean specialist agents (`.claude/agents/`) configured with `omitClaudeMd: true`:
+- `@bloc-specialist`: RxDart stream lifecycles, composite subscriptions, emit guards, and concurrency recipes.
+- `@ui-artisan`: ScreenUtil public widgets, ResColors tokens, `AppResponseBuilder`, l10n, and zero `setState`.
+- `@device-qa`: Declarative end-to-end device testing via Maestro CLI and MCP.
+- `@flutter-qa`: One-shot architectural conformance, layer boundary enforcement, and lint audits.
+- **Coordination**: Supports single-terminal in-process handoffs and concurrent multi-session Git worktrees (`.worktreeinclude`) via `scripts/team/task_handoff.dart` and `scripts/team/heartbeat.dart` (`.harness/team-protocol.md`).
+
+### 3. 📱 Declarative Device Automation (Maestro)
+Replaces brittle accessibility tree parsing and screenshot OCR with deterministic **Maestro YAML flows** (`.maestro/flows/smoke_launch.yaml`). The agent tests real mobile apps on emulators and devices via `maestro test` with zero prompt token bloat.
+
+### 4. 📚 Production Repository Recipes
+Codifies production-grade patterns in `.agents/skills/add-endpoint/repo-recipes.md`:
+- Standard CRUD with defensive query filtering (`_sanitizeFilters`).
+- Capability mixins (`SoftDeletableRepoMixin`, `ActiveToggleRepoMixin`).
+- Multipart file and media uploads (`UploadMediaRepoMixin`).
+- Bulk and unpaginated fetches (`all=true` with batching fallback).
+- Binary streaming and PDF document downloads.
+- Cache-aside repositories with in-memory TTL.
+
+### 5. 🧠 5-Tier Memory & Learning Model
+Eliminates ceremonial task close-out blockers in favor of a layered memory architecture:
+1. **Tier 1 (Ambient)**: Claude Code Auto-Memory (`MEMORY.md` + Auto-Dream) for ambient personal learning across sessions.
+2. **Tier 2 (Structured Knowledge Graph)**: Anthropic `@modelcontextprotocol/server-memory` registered in `.mcp.json` for persistent technical facts and API quirks on demand.
+3. **Tier 3 (Path-Scoped Rules)**: Invariant standards codified in `.claude/rules/*.md`.
+4. **Tier 4 (Permanent Team Rules)**: Repository-wide non-negotiables in `AGENTS.md` §7.
+5. **Tier 5 (Offline CLI)**: `scripts/agent/learn.dart` for offline verification and proposing upstream fixes.
 
 Try: *"Add a profile screen for `GET /me`; the Postman collection is in `docs/`."* More in [the harness docs](bricks/harness.md).
 

@@ -53,7 +53,22 @@ Also new: golden rule 13 (lint-enforced), a permission allowlist for safe dev co
 
 Roadmap item 4 (spec-first workflow) is delivered as the `add-feature` skill, apart from automatic contract-to-code generation. Item 7 (memory hygiene) is partly covered by the lessons loop's stale/duplicate/cap review.
 
-**Still unmeasured.** The loop makes learning possible and auditable. It cannot prove that agents improve. That still needs the eval suite (item 1), which can now also score lesson quality: did a recorded lesson prevent the repeat?
+## What 2.0.0 adds: Token Shield, Specialist Swarm, Maestro QA, Repo Recipes, and 5-Tier Memory
+
+Observation of production apps (`AI-LMS-NEW`, `Edu Tech Era`) revealed critical failure modes in the 1.7.0 setup:
+1. **Context rot and the flat-file lessons tax**: `lessons.md` grew to 72 entries, polluting prompt contexts with transient local machine IPs (`192.168.29.138`) and emulator bugs. The mandatory close-out questionnaire added unacceptable token overhead.
+2. **Generalist context exhaustion**: A single agent attempting to handle networking, BLoC state, UI layouts, and tests in one session quickly hit context degradation.
+3. **Vision/OCR test overhead**: Using screenshot OCR or accessibility trees (OpenMob/Appium) consumed tens of thousands of tokens and suffered from timing flakiness.
+
+| Gap after 1.7.0 | 2.0.0 Solution |
+|---|---|
+| Large monolithic prompt contexts; repetitive rule re-reads across long sessions | **Token Shield (`.claude/settings.json`)**: 1-hour prompt caching (`promptCacheTtl: "1h"`, `subagentPromptCacheTtl: "1h"`), 4KB bash terminal output clamp (`bashOutputMaxChars: 4000`), and strict `permissions.deny` blocking `.dart_tool/`, `build/`, `*.g.dart`, and signing keys. |
+| All architecture rules loaded into context upfront regardless of task | **Context-Slicing Path Rules (`.claude/rules/`)**: `bloc.md`, `ui.md`, `endpoints.md`, `testing.md`. Injected dynamically only when matching directories/files are edited (**0 baseline tokens**). |
+| Single generalist agent context exhaustion | **Specialist Agent Swarm (`.claude/agents/`)**: Lean subagents (`@bloc-specialist`, `@ui-artisan`, `@device-qa`, `@flutter-qa`) configured with `omitClaudeMd: true` to prevent prompt cache duplication. |
+| Inability to run concurrent multi-agent work | **Team Protocol & Worktrees (`.harness/team-protocol.md`)**: Single-terminal in-process handoffs or concurrent Git worktrees (`.worktreeinclude`) coordinated via `scripts/team/task_handoff.dart` and `scripts/team/heartbeat.dart`. |
+| Brittle, token-draining mobile UI automation | **Maestro Declarative Mobile Automation (`.maestro/flows/smoke_launch.yaml`)**: Zero-token declarative YAML flows executed via `maestro test` or MCP (`maestro mcp`). |
+| Missing production-tested repository patterns | **Production Repository Recipes (`repo-recipes.md`)**: CRUD with `_sanitizeFilters`, capability mixins (`SoftDeletableRepoMixin`, `ActiveToggleRepoMixin`), multipart upload, unpaginated bulk fetch (`all=true`), binary PDF downloads, and cache-aside with TTL. |
+| Ceremonial task close-out tax and flat-file memory bloat | **5-Tier Memory & Learning Model**: Ambient session memory via Claude Auto-Memory (`MEMORY.md` + Auto-Dream); on-demand Knowledge Graph via Anthropic MCP (`@modelcontextprotocol/server-memory`); path rules; `AGENTS.md` §7; and optional offline CLI tracking (`scripts/agent/learn.dart`). |
 
 ## Roadmap (not built yet), in priority order
 

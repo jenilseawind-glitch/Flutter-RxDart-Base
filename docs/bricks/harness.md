@@ -18,40 +18,59 @@ The brick has no hooks and does not edit `pubspec.yaml`. `project` adds the `red
 | `AGENTS.md` | The rulebook every agent reads: architecture, 13 golden rules (🔒 = enforced by lints), skill index, tooling, memory. Everything below the `harness:project-rules` marker is yours. |
 | `CLAUDE.md` | Claude Code's entry: imports `AGENTS.md`, adds the app ids, loads `.harness/active-context.md`. |
 | `.agents/skills/` | Eight skills, one per kind of work (table below). Claude Code reads the entry points in `.claude/skills/`. |
+| `.claude/rules/` | Path-scoped rules loaded on-demand: `bloc.md`, `ui.md`, `endpoints.md`, `testing.md`. |
+| `.claude/agents/` | Specialist subagent swarm: `@bloc-specialist`, `@ui-artisan`, `@device-qa`, `@flutter-qa`. |
+| `scripts/agent/on_edit.dart` | Fast (<1.5s) in-flight format and analyze check on touched files. |
+| `scripts/team/` | Distributed swarm coordination: `task_handoff.dart` and `heartbeat.dart` (`.harness/team-protocol.md`). |
+| `.maestro/` | Declarative E2E mobile testing flows (`flows/smoke_launch.yaml`). |
 | `scripts/agent/verify.dart` | The quality gate: format → analyze (including architecture lints) → tests → lessons → snapshot (`--fast` = format + analyze). |
 | `scripts/agent/wire_route.dart` | Scaffolds a feature with `mason make bloc` if missing, then adds its route. |
 | `scripts/agent/learn.dart` | The lessons loop (below). |
 | `scripts/agent/upgrade.dart` | Upgrades the harness without touching your work (below). |
-| `.claude/` | Settings (edit hook, allowlist), skill entry points, the `flutter-qa` review subagent. |
-| `.mcp.json`, `.cursor/mcp.json` | The Dart & Flutter MCP server: analyzer, symbols, pub.dev, hot reload, runtime errors, widget tree. |
-| `.harness/` | Memory: `active-context.md`, `progress.md`, `lessons.md`, generated `system-snapshot.md`, `version.json`. Agents add skill overlays (`skills/<skill>.md`) and specs (`specs/<feature>.md`). |
+| `.claude/` | Settings (Token Shield, 1h cache TTL, 4KB clamp, multiplexing), skill entry points, specialist subagents. |
+| `.mcp.json`, `.cursor/mcp.json` | Dart MCP server, Maestro device automation, and Anthropic Knowledge Graph memory server. |
+| `.harness/` | Memory: `active-context.md`, `progress.md`, `lessons.md`, `team-protocol.md`, generated `system-snapshot.md`, `version.json`. Agents add skill overlays (`skills/<skill>.md`) and specs (`specs/<feature>.md`). |
 
-### Skills
+### Skills & Production Recipes
 
 | Skill | Use it for |
 |---|---|
 | `add-feature` | A new screen or flow: contract → spec → scaffold → layers → tests → gate |
-| `add-endpoint` | Any API work: transport-only repo, defensive model, BLoC call, tests with real JSON |
+| `add-endpoint` | Any API work: transport-only repo, defensive model, BLoC call, tests with real JSON (backed by `repo-recipes.md`) |
 | `manage-state` | Where state lives; BLoC recipes (submit, search, pagination, events, several loads, timers); Redux changes |
 | `build-ui` | Page/content split, tokens, ScreenUtil, l10n, shared widgets, dialogs, accessibility |
-| `write-tests` | BLoC, model, widget, reducer and regression tests |
+| `write-tests` | BLoC, model, widget, reducer, regression tests, and Maestro device journeys |
 | `fix-bug` | Symptom → layer table, every gate step and lint rule |
-| `evolve-harness` | The lessons loop and project skills |
+| `evolve-harness` | Tiered memory, Knowledge Graph observations, path rules, and project skills |
 | `flutter-senior-dev` | Planning, architecture decisions, review |
 
-Codex, Gemini CLI and OpenCode read `.agents/skills/`. Claude Code reads only `.claude/skills/`, so each skill has a small entry point there. Cursor reads both folders and may list each skill twice.
+Codex, Gemini CLI and OpenCode read `.agents/skills/`. Claude Code reads `.claude/skills/`. Cursor reads both. Production repository recipes (CRUD filters, capability mixins, multipart upload, unpaginated fetch, binary streaming, cache-aside) are detailed in `.agents/skills/add-endpoint/repo-recipes.md`.
 
-### The lessons loop
+### Specialist Agent Swarm & Team Coordination
 
-Each skill starts by loading what the project has learned and ends by recording what a future agent would otherwise get wrong:
+Tasks multiplex across lean, role-bounded subagents in `.claude/agents/` configured with `omitClaudeMd: true` to prevent cache invalidation:
+- `@bloc-specialist`: RxDart stream lifecycles, composite subscriptions, emit guards.
+- `@ui-artisan`: ScreenUtil public widgets, ResColors tokens, `AppResponseBuilder`, zero `setState`.
+- `@device-qa`: Declarative end-to-end device testing via Maestro CLI and MCP.
+- `@flutter-qa`: Conformance audits, boundary checks, and custom lints.
 
-```bash
-dart run scripts/agent/learn.dart list add-endpoint     # start of a task
-dart run scripts/agent/learn.dart add add-endpoint "Orders API dates are epoch seconds: use fromMillisecondsSinceEpoch" --proof commit:a1b2c3d
-dart run scripts/agent/learn.dart review                # seen twice? promote it
-```
+Coordination works across single-terminal in-process handoffs and concurrent multi-session Git worktrees (`.worktreeinclude`) via `scripts/team/task_handoff.dart` and `scripts/team/heartbeat.dart` (`.harness/team-protocol.md`).
 
-A lesson seen twice is promoted into a skill overlay, a rule in `AGENTS.md` §7, a new project skill, or `upstream` for the base repository (`learn.dart upstream` prints those). A promoted lesson that happens again reopens. `learn.dart` refuses secrets and injected instructions, and `verify` fails on credentials in any memory file.
+### Declarative Device Automation (Maestro)
+
+Mobile QA runs deterministically without token-draining screenshot OCR or raw accessibility trees:
+- Flows live in `.maestro/flows/` (e.g. `smoke_launch.yaml`).
+- Pre-approved in `.mcp.json` (`maestro mcp`) and CLI (`maestro test .maestro/flows/smoke_launch.yaml`).
+- Subagent `@device-qa` drives full user journeys across real emulators and devices.
+
+### 5-Tier Memory & Self-Learning Architecture
+
+Instead of a ceremonial task close-out tax that inflates prompt context, memory is structured in five tiers:
+1. **Tier 1 (Ambient)**: Claude Code Auto-Memory (`MEMORY.md` + Auto-Dream) captures personal session insights without manual friction.
+2. **Tier 2 (Structured Knowledge Graph)**: `@modelcontextprotocol/server-memory` registered in `.mcp.json` stores technical domain entities, relations, and observations locally with **0 baseline prompt tokens**.
+3. **Tier 3 (Path-Scoped Rules)**: Invariant standards codified in `.claude/rules/*.md` (`bloc.md`, `ui.md`, `endpoints.md`, `testing.md`) load only when editing matching files.
+4. **Tier 4 (Permanent Team Rules)**: Non-negotiable team rules live below `harness:project-rules` in `AGENTS.md` §7.
+5. **Tier 5 (Offline CLI)**: `scripts/agent/learn.dart` remains available for offline CLI tracking and packaging upstream proposals (`learn.dart upstream`).
 
 ---
 

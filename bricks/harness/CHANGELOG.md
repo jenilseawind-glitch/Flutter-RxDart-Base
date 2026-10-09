@@ -1,5 +1,42 @@
 # Changelog
 
+## 2.0.0
+
+- **Multi-Agent Specialist Swarm & Token Shield Architecture**:
+  - **Token Shield Configuration (`.claude/settings.json`)**: Configured 1-hour prompt cache TTL (`promptCacheTtl: "1h"`, `subagentPromptCacheTtl: "1h"`), clamped terminal bash outputs to 4,000 characters (`bashOutputMaxChars: 4000`), configured cross-session notification handling (`crossSessionInbound: "notify"`), and configured automatic teammate multiplexing (`teammateMode: "auto"`). Deny rules expanded to block reads on `.dart_tool/`, `build/`, `*.g.dart`, and `*.freezed.dart`.
+  - **Context-Slicing Path Rules (`.claude/rules/`)**: Path-scoped architecture rules dynamically load into context only when matching files are edited:
+    - `bloc.md`: BLoC stream lifecycle, subject guarding, error mapping, and live search rules.
+    - `ui.md`: Zero setState, ScreenUtil in public widgets, ResColors, and AppResponseBuilder.
+    - `endpoints.md`: Repository transport boundaries, ApiBaseHelper, and defensive model deserialization.
+    - `testing.md`: BLoC behavioral coverage, fake repositories, and RxDart stream test assertions.
+  - **Specialist Agent Swarm (`.claude/agents/`)**: Introduced ultra-lean, role-bounded specialist subagents with `omitClaudeMd: true` to prevent prompt cache duplication:
+    - `bloc-specialist.md`: Focused on reactive streams, subjects, and BLoC unit tests.
+    - `ui-artisan.md`: Focused on design system widgets, ScreenUtil, and theme tokens.
+    - `device-qa.md`: Automated mobile device testing via Maestro CLI.
+    - `flutter-qa.md`: Streamlined one-shot architecture conformance reviewer.
+  - **OpenMob Replacement via Maestro Automation**: Integrated Maestro declarative YAML mobile test runner (`maestro mcp` in `.mcp.json`) and shipped baseline launch flow `.maestro/flows/smoke_launch.yaml`, eliminating token-heavy accessibility tree and screenshot inspections.
+  - **Single-Terminal & Multi-Session Swarm Protocol**:
+    - `.harness/team-protocol.md`: Documents in-process multiplexing and concurrent multi-session Git worktree workflows (`.worktreeinclude`).
+    - `scripts/team/task_handoff.dart`: Manages layer-isolated task handoffs with concurrency locks, session tracking, and atomic file writes in `.harness/tasks/active.json`.
+    - `scripts/team/heartbeat.dart`: Safe swarm inspection without triggering uncached wakeups.
+  - **Production Repository Recipes (`.agents/skills/add-endpoint/repo-recipes.md`)**: Codified production-tested patterns from real apps:
+    - Recipe A: Standard REST CRUD with query param sanitization (`_sanitizeFilters`).
+    - Recipe B: Capability mixins (`SoftDeletableRepoMixin`, `ActiveToggleRepoMixin`).
+    - Recipe C: Multipart & media upload mixin (`UploadMediaRepoMixin`, form data, MIME detection).
+    - Recipe D: Bulk & "all" unpaginated fetches (`all=true` with batching fallback).
+    - Recipe E: Binary document and PDF streaming downloads.
+    - Recipe F: Cache-aside repository pattern with TTL and memory invalidation.
+    - Recipe G: Long-running operation polling with status callbacks.
+  - **5-Tier Zero-Token Memory & Learning Architecture**:
+    - Replaced the ceremonial task close-out tax with a multi-tier memory system.
+    - **Tier 1 (Ambient)**: Claude Code Auto-Memory (`MEMORY.md` + Auto-Dream) for ambient session learnings.
+    - **Tier 2 (Structured Knowledge Graph)**: Registered `@modelcontextprotocol/server-memory` in `.mcp.json` and pre-approved `mcp__memory` in `.claude/settings.json` for on-demand knowledge graph entities and observations (0 baseline tokens).
+    - **Tier 3 (Path Rules)**: Domain standards dynamically injected via `.claude/rules/*.md`.
+    - **Tier 4 (Team Rules)**: Permanent team non-negotiables in `AGENTS.md` §7.
+    - **Tier 5 (Offline CLI)**: `scripts/agent/learn.dart` preserved for offline CLI tracking and upstream base contributions.
+  - **Fast In-Flight Quality Gate (`scripts/agent/on_edit.dart`)**: Lightning-fast (<1.5s) formatting and analysis check for modified files during active editing.
+  - **Expanded Upgrade Engine (`scripts/agent/upgrade.dart`)**: Syncs team scripts, specialist agents, path rules, Maestro flows, worktree configs, and reports missing MCP server configurations.
+
 ## 1.8.0
 
 - **Native analyzer plugin support**:

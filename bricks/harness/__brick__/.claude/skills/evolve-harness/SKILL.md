@@ -1,6 +1,6 @@
 ---
 name: evolve-harness
-description: The harness's self-learning loop for this Flutter RxDart project - record lessons from mistakes, corrections and backend quirks (scripts/agent/learn.dart), recall them at the start of a task, promote repeated lessons into skill overlays, project rules or new project skills, prune stale ones, and package harness-level lessons for the upstream base repository. Use at the close-out of every task, when verify reports lessons ready to promote, when the user corrects you or says "remember this" / "always do X", or when asked to improve, tune, teach or update the agent setup, skills or rules.
+description: The tiered memory and self-learning loop for this Flutter RxDart project - combine Claude Code Auto-Memory, Anthropic Knowledge Graph MCP (mcp__memory), path-scoped rules (.claude/rules/), project rules (AGENTS.md §7), and offline CLI tracking (scripts/agent/learn.dart) to capture domain facts, backend quirks and architectural conventions without token waste. Use when the user corrects you, says "remember this", when learning API quirks, or when updating rules, skills, and memory.
 ---
 
 This is the Claude Code entry point for a cross-tool skill. The full skill

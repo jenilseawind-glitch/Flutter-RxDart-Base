@@ -9,7 +9,7 @@ Spec first, scaffold second, then fill in from the network up, and finish with a
 
 ## 0. Load what this project learned
 1. Read `.harness/skills/add-feature.md` if it exists. It holds this project's own additions and wins over this file when they disagree.
-2. Run `dart run scripts/agent/learn.dart list add-feature`.
+2. Check the Knowledge Graph (`search_nodes` / `read_graph`) or run `dart run scripts/agent/learn.dart list add-feature`.
 3. Read `.harness/system-snapshot.md`: existing features, routes and endpoints. Extend an existing feature instead of creating a near-duplicate.
 
 ## 1. Pin the contract
@@ -43,7 +43,7 @@ This runs `mason make bloc` when `lib/features/<feature_name>/` is missing, then
 Run `dart run scripts/agent/verify.dart --fast` straight away. A green start means every later failure is yours and easy to locate.
 
 ## 4. Fill in, network first
-Work in this order, keeping the gate green as you go (`--fast` while iterating):
+Work in this order, keeping the gate green as you go (`dart run scripts/agent/on_edit.dart` on touched files for sub-second feedback):
 
 1. **Endpoint, repo, model, BLoC fetch**: follow `.agents/skills/add-endpoint/SKILL.md` for each endpoint. The scaffold's repo calls a placeholder path, so replace it.
 2. **Screen state beyond one fetch** (forms, search, pagination, events, session changes): follow `.agents/skills/manage-state/SKILL.md`.
@@ -57,9 +57,11 @@ Work in this order, keeping the gate green as you go (`--fast` while iterating):
 Keep the 7 generated BLoC tests passing and adapt them to the real model. Then add one test per acceptance criterion: BLoC tests for state and logic, a widget test for the content widget when it has conditional UI. See `.agents/skills/write-tests/SKILL.md`.
 
 ## 7. Gate, spec, close out
-1. `dart run scripts/agent/verify.dart` until it passes: format, analyze, architecture lints, tests, lessons, snapshot. Failures: `.agents/skills/fix-bug/SKILL.md`.
-2. Tick the criteria in the spec. Move anything you didn't do into its "Open questions".
-3. Close out per `AGENTS.md` §6: update `.harness/active-context.md`, then record anything a future agent would otherwise get wrong (`.agents/skills/evolve-harness/SKILL.md`, step 1).
+1. In-flight check: `dart run scripts/agent/on_edit.dart` on touched files.
+2. Full quality gate: `dart run scripts/agent/verify.dart` until it passes: format, analyze, architecture lints, tests, lessons, snapshot. Failures: `.agents/skills/fix-bug/SKILL.md`.
+3. Device smoke test (if emulators/devices connected): `maestro test .maestro/flows/smoke_launch.yaml`.
+4. Tick the criteria in the spec. Move anything you didn't do into its "Open questions".
+5. Close out per `AGENTS.md` §6: update `.harness/active-context.md`, then record anything a future agent would otherwise get wrong (`.agents/skills/evolve-harness/SKILL.md`, step 1).
 
 ## Done means
 - The spec exists and every criterion is ticked or explicitly deferred.

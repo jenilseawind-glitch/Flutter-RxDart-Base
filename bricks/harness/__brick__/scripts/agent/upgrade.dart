@@ -331,6 +331,10 @@ void _apply(
   final kept = [
     for (final dir in [
       'scripts/agent',
+      'scripts/team',
+      '.claude/agents',
+      '.claude/rules',
+      '.maestro/flows',
       for (final skill in shipped) ...[
         '.agents/skills/$skill',
         '.claude/skills/$skill',
@@ -338,10 +342,13 @@ void _apply(
     ])
       ..._syncDir(staged, dir),
   ];
-  _copyFile(
-    '$staged/.claude/agents/flutter-qa.md',
-    '.claude/agents/flutter-qa.md',
-  );
+  if (!File('.worktreeinclude').existsSync() &&
+      File('$staged/.worktreeinclude').existsSync()) {
+    _copyFile('$staged/.worktreeinclude', '.worktreeinclude');
+  }
+  if (File('$staged/.harness/team-protocol.md').existsSync()) {
+    _copyFile('$staged/.harness/team-protocol.md', '.harness/team-protocol.md');
+  }
   if (kept.isNotEmpty) {
     print(
       'Kept files the harness does not ship (yours):\n'
@@ -367,6 +374,7 @@ void _apply(
     }
   }
   _reportSettings('$staged/.claude/settings.json');
+  _reportMcpServers('$staged/.mcp.json');
 
   // Tier 3 — contracts.
   for (final f in ['AGENTS.md', 'CLAUDE.md']) {
@@ -482,6 +490,22 @@ void _reportSettings(String templatePath) {
       'The template also pre-approves these commands; add them to '
       'permissions.allow in .claude/settings.json if you want them:\n'
       '${missing.map((e) => '  "$e"').join(',\n')}',
+    );
+  }
+}
+
+void _reportMcpServers(String templatePath) {
+  final file = File('.mcp.json');
+  if (!file.existsSync() || !File(templatePath).existsSync()) return;
+  final mine = _readJson(file);
+  final template = _readJson(File(templatePath));
+  final myServers = (mine['mcpServers'] as Map?)?.keys.toSet() ?? {};
+  final templateServers = (template['mcpServers'] as Map?)?.keys.toSet() ?? {};
+  final missing = templateServers.difference(myServers);
+  if (missing.isNotEmpty) {
+    print(
+      'The template also registers these MCP servers in .mcp.json:\n'
+      '${missing.map((s) => '  $s').join('\n')}',
     );
   }
 }

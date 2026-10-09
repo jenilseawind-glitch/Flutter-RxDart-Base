@@ -9,7 +9,7 @@ A test here proves a contract the architecture promises: states arrive in order,
 
 ## 0. Load what this project learned
 1. Read `.harness/skills/write-tests.md` if it exists. It wins over this file.
-2. Run `dart run scripts/agent/learn.dart list write-tests`.
+2. Check the Knowledge Graph (`search_nodes` / `read_graph`) or run `dart run scripts/agent/learn.dart list write-tests`.
 
 ## 1. What to test, by layer
 | Layer | Test | Always? |
@@ -80,11 +80,19 @@ Pages create real BLoCs (and therefore real repos), so test pages only through t
 - Persistence: `SharedPreferences.setMockInitialValues({})`, a `Store` with `persistenceMiddleware`, dispatch, `await persistenceIdle`, then read the prefs.
 - The app smoke test (`test/widget_test.dart`) builds `MyApp` with an in-memory store. Keep it passing when you change `main.dart`.
 
-## 6. From criteria and bugs to tests
+## 6. End-to-End Device Testing (Maestro)
+For full integration and device user journeys on connected emulators or devices:
+- Declarative YAML flows live in `.maestro/flows/` (e.g. `smoke_launch.yaml`).
+- Run via CLI: `maestro test .maestro/flows/smoke_launch.yaml`.
+- Prefer declarative Maestro assertions (`assertVisible`, `tapOn`) over token-heavy screenshot scrapes.
+- Subagent `@device-qa` (`.claude/agents/device-qa.md`) runs these journeys.
+
+## 7. From criteria and bugs to tests
 - Each acceptance criterion in `.harness/specs/<feature>.md` maps to at least one test named after it (`'AC2: empty list shows the empty state'`).
 - Each bug fix starts with a test that fails for the reported reason (`.agents/skills/fix-bug/SKILL.md`).
 
-## 7. Run and close out
+## 8. Run and close out
+- In-flight check: `dart run scripts/agent/on_edit.dart`.
 - One file while iterating: `flutter test test/features/<name>/`.
 - Before reporting done: `dart run scripts/agent/verify.dart`.
-- A flaky test is a bug in the test or the BLoC: usually a missing `pumpEventQueue()`, a real timer, or a shared singleton. Fix it; never skip it. Record the cause with `learn.dart add write-tests ...`.
+- A flaky test is a bug in the test or the BLoC: usually a missing `pumpEventQueue()`, a real timer, or a shared singleton. Fix it; never skip it. Record the cause into the Knowledge Graph (`add_observations`), in `.claude/rules/testing.md`, or with `learn.dart add write-tests ...`.

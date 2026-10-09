@@ -28,10 +28,14 @@ Look for `*.postman_collection.json`, then OpenAPI/Swagger, then docs. Add endpo
 
 ## 4. Tooling for Agents
 - **Skills** (`.agents/skills/`; Claude Code: `.claude/skills/`). Load the one that fits before starting: `add-feature` (new screen/flow), `add-endpoint` (API work), `manage-state` (BLoC recipes, Redux changes), `build-ui`, `write-tests`, `fix-bug` (bugs, red gate), `evolve-harness` (lessons, rules, new skills), `flutter-senior-dev` (planning, architecture, review).
+- **Specialist Subagents** (`.claude/agents/`): `@bloc-specialist` (reactive state/streams), `@ui-artisan` (views/widgets/design system), `@device-qa` (Maestro device testing), `@flutter-qa` (architecture review).
+- **In-flight check**: `dart run scripts/agent/on_edit.dart` (<1.5s format + analyze on touched files).
+- **Swarm coordination**: `dart run scripts/team/task_handoff.dart` and `dart run scripts/team/heartbeat.dart` (`.harness/team-protocol.md`).
+- **Device testing**: `maestro test .maestro/flows/smoke_launch.yaml` (`.mcp.json` → `maestro mcp`).
 - **Scaffold + route in one step**: `dart run scripts/agent/wire_route.dart <feature_name> [route_path]` (runs `mason make bloc` if the feature is missing).
 - **Quality gate** (must pass before proposing a commit): `dart run scripts/agent/verify.dart` — format, analyze, custom lints, tests, lessons, snapshot. `--fast` = format + analyze only. Wrappers: `bash scripts/agent/verify.sh`, `powershell -File scripts/agent/verify.ps1`.
-- **Dart & Flutter MCP server** (`.mcp.json` → `dart mcp-server`, ships with the SDK): `analyze_files`, `lsp` (hover, definitions), `pub` / `pub_dev_search` (dependencies), `read_package_uris`, and against a running debug app `hot_reload`, `hot_restart`, `get_runtime_errors`, `widget_inspector`, `flutter_driver_command`. Prefer these over guessing APIs or reading pub-cache sources. Formatting and tests go through `verify.dart`.
-- **Learning loop**: `dart run scripts/agent/learn.dart list|add|hit|review|promote` over `.harness/lessons.md` (see §6).
+- **MCP servers** (`.mcp.json`): `dart` (`mcp__dart__*` for analyzer/LSP/debug), `maestro` (`mcp__maestro__*` for mobile UI testing), and `memory` (`mcp__memory__*` via `@modelcontextprotocol/server-memory` for persistent knowledge graphs without prompt token bloat).
+- **Learning & memory**: Ambient session learning via Claude Auto-Memory; persistent domain knowledge via MCP Knowledge Graph; path rules (`.claude/rules/*.md`) for architectural standards; and `dart run scripts/agent/learn.dart` for offline CLI tracking.
 - **Harness upgrade**: `dart run scripts/agent/upgrade.dart` (keeps `.harness/`, your own skills and everything below the project-rules marker).
 - **FVM projects**: when `.fvm/` or `.fvmrc` exists, prefix bare CLI commands with `fvm` (e.g. `fvm dart run scripts/agent/verify.dart`, `fvm flutter test`). Agent scripts (`verify.dart`, `wire_route.dart`) detect FVM automatically.
 
@@ -40,13 +44,13 @@ Look for `*.postman_collection.json`, then OpenAPI/Swagger, then docs. Add endpo
 - Conventional Commits: `feat(<feature>): ...`, `fix(...)`, `refactor(...)`, `chore(...)`.
 
 ## 6. Project Memory & Learning (`.harness/`)
-- **Start of task**: `.harness/active-context.md` is already in context for Claude Code; other agents read it first. Read `.harness/system-snapshot.md` for the project map (features, routes, endpoints, state, deps). Then load what the project learned for this task: `.harness/skills/<skill>.md` if it exists, and `dart run scripts/agent/learn.dart list <skill>`.
+- **Start of task**: `.harness/active-context.md` is already in context for Claude Code; other agents read it first. Read `.harness/system-snapshot.md` for the project map (features, routes, endpoints, state, deps). Check `.harness/skills/<skill>.md` or query the MCP Knowledge Graph (`search_nodes` / `read_graph`) for domain quirks.
 - **End of task (close-out)**: gate green, then update `active-context.md`:
   - `Current Focus`: 2-3 lines — what finished, what's next.
   - `Recent Tasks`: newest first, 1-2 lines each with proof (`commit:a1b2c3d` or `file:lib/...`). Max 5; move the oldest to `progress.md` as one line `[YYYY-MM-DD] type(scope): what (proof)`.
   - `Key Decisions`: 1-2 lines, decision + reason.
   - `Known Issues`: only what is still broken. Delete fixed items. `⏸ deferred by decision: <reason>` for items the owner chose to skip.
-- **Lessons**: when a future agent would repeat something (a gate needed several attempts, the user corrected you, a backend quirk, a wrong or missing skill step), record one line: `learn.dart hit L<id>` if it's listed, else `learn.dart add <skill|general> "<trigger>: <fix>" --proof <ref>`. When `verify` reports lessons ready to promote, follow the `evolve-harness` skill. "Remember this" / "always X" from the user goes straight into §7 or the skill's overlay.
+- **Lessons & Evolution**: Capture quirks without ceremony. (1) Ambient reflections: handled automatically by Claude Auto-Memory (`MEMORY.md`). (2) Domain facts & API quirks: record into the MCP Knowledge Graph (`add_observations`) or `.claude/rules/<domain>.md`. (3) Permanent team rules: "Remember this" / "always X" goes straight into §7. (4) Offline CLI: `dart run scripts/agent/learn.dart` is available for offline logging and proposing upstream fixes.
 - Project knowledge lives only in `.harness/` and below the project-rules marker. The shipped skills, `scripts/agent/` and the text above the marker are replaced on upgrade.
 - Never edit `system-snapshot.md` (generated by `verify`). Read `progress.md` only when asked for history.
 

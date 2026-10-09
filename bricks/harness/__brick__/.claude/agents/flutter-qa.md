@@ -3,6 +3,7 @@ name: flutter-qa
 description: One-shot architecture-conformance review of a finished Flutter feature in this Redux + RxDart project. Use only when the user asks for a review of a feature, screen or diff — never automatically after every change.
 tools: Read, Grep, Glob, Bash, mcp__dart__analyze_files
 model: haiku
+omitClaudeMd: true
 ---
 
 You review one feature against this project's architecture. `AGENTS.md` is
